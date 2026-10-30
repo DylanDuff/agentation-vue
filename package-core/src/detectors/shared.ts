@@ -98,6 +98,8 @@ export const DEFAULT_USER_PATTERNS: RegExp[] = [
 /** Strips absolute prefixes so paths read like `src/components/Button.vue` */
 export function cleanSourcePath(rawPath: string): string {
   let path = rawPath.replace(/\\/g, "/").replace(/^file:\/\//, "").replace(/\?.*$/, "");
+  // Already relative (e.g. Angular's "src/app/card.component.html"): keep it whole
+  if (!path.startsWith("/") && !/^[a-zA-Z]:\//.test(path)) path = `/${path}`;
   const markers = ["/src/", "/app/", "/components/", "/pages/", "/layouts/"];
   for (const marker of markers) {
     const index = path.indexOf(marker);

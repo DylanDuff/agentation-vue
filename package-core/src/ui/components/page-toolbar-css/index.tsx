@@ -725,8 +725,14 @@ function PageFeedbackToolbarForRoute({
     });
   }, []);
 
-  // Check if running in development mode - React detection only works in development mode
-  const isDevMode = isDevModeProp ?? process.env.NODE_ENV === "development";
+  // Check if running in development mode - component detection only works in development mode.
+  // Adapters that cannot tell (a script tag on any page) leave isDevMode unset; the detectors
+  // then check the page whenever the toolbar opens, since the app may boot after the toolbar.
+  const detectedDevBuild = useMemo(
+    () => isDevModeProp === undefined && detectors.some((detector) => detector.isDevBuild?.() ?? false),
+    [isDevModeProp, detectors, isActive, showSettings],
+  );
+  const isDevMode = isDevModeProp ?? (process.env.NODE_ENV === "development" || detectedDevBuild);
 
   // Detectors are fixed per adapter; memoized handlers read the current list
   const detectorsRef = useRef(detectors);
