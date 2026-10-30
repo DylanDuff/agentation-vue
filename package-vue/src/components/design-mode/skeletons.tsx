@@ -1,7 +1,7 @@
 
 import type { CSSProperties } from "vue";
 import type { JSX } from "vue/jsx-runtime";
-import type { ComponentType } from "@core/components/design-mode/types";
+import type { ComponentType } from "@agentation/core/design-mode/types";
 import { rs } from "../../utils/react-style";
 
 // =============================================================================

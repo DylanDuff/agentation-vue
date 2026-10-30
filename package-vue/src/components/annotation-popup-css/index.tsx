@@ -1,9 +1,9 @@
 import { computed, defineComponent, onBeforeUnmount, onMounted, ref, watch, type CSSProperties, type PropType } from "vue";
 import { useExitCompletion } from "../../composables/use-exit-completion";
-import styles, { css as popupCss } from "@core/components/annotation-popup-css/styles.module.scss";
-import { ensureStyles } from "../../utils/ensure-styles";
+import styles, { css as popupCss } from "@agentation/core/styles/annotation-popup-css/styles.module.scss";
+import { ensureStyles } from "@agentation/core/utils/ensure-styles";
 import { AnnotationEditor, type AnnotationEditorHandle } from "./annotation-editor";
-import { originalSetTimeout } from "@core/utils/freeze-animations";
+import { originalSetTimeout } from "@agentation/core/utils/freeze-animations";
 
 // =============================================================================
 // Types

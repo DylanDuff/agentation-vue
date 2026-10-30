@@ -38,6 +38,9 @@ importers:
 
   package:
     devDependencies:
+      '@agentation/core':
+        specifier: workspace:*
+        version: link:../package-core
       '@testing-library/react':
         specifier: ^16.3.3
         version: 16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -87,8 +90,26 @@ importers:
         specifier: ^2.1.9
         version: 2.1.9(@types/node@20.19.43)(jsdom@25.0.1)(sass-embedded@1.97.3)(sass@1.104.1)
 
+  package-core:
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.43
+        version: 20.19.43
+      jsdom:
+        specifier: ^25.0.1
+        version: 25.0.1
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.9
+        version: 2.1.9(@types/node@20.19.43)(jsdom@25.0.1)(sass-embedded@1.97.3)(sass@1.104.1)
+
   package-vue:
     devDependencies:
+      '@agentation/core':
+        specifier: workspace:*
+        version: link:../package-core
       '@testing-library/dom':
         specifier: ^10.4.1
         version: 10.4.1

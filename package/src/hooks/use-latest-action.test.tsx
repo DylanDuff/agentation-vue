@@ -2,7 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { useLatestAction } from "./use-latest-action";
 
-vi.mock("../utils/freeze-animations", () => ({
+vi.mock("@agentation/core/utils/freeze-animations", () => ({
   originalSetTimeout: (callback: () => void, delay: number) =>
     setTimeout(callback, delay),
 }));

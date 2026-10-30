@@ -38,9 +38,9 @@ export {
   isInShadowDOM,
   getShadowHost,
   closestCrossingShadow,
-} from "@core/utils/element-identification";
+} from "@agentation/core/utils/element-identification";
 
-export { loadAnnotations, saveAnnotations, getStorageKey } from "@core/utils/storage";
+export { loadAnnotations, saveAnnotations, getStorageKey } from "@agentation/core/utils/storage";
 
 // Types
-export type { Annotation } from "@core/types";
+export type { Annotation } from "@agentation/core/types";

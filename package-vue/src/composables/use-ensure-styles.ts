@@ -1,4 +1,4 @@
-import { ensureStyles } from "../utils/ensure-styles";
+import { ensureStyles } from "@agentation/core/utils/ensure-styles";
 
 /** Template ref callback that installs a component stylesheet where the element renders. */
 export function useEnsureStyles(id: string, css: string | undefined) {

@@ -1,12 +1,12 @@
 import { memo, useLayoutEffect, useRef } from "react";
 import { usePanelPresence } from "../../../hooks/use-panel-presence";
 import { COLOR_OPTIONS, ToolbarSettings } from "..";
-import { OUTPUT_DETAIL_OPTIONS } from "../../../utils/generate-output";
+import { OUTPUT_DETAIL_OPTIONS } from "@agentation/core/output/generate-output";
 import { HelpTooltip } from "../../help-tooltip";
 import { IconChevronLeft, IconMoon, IconSun } from "../../icons";
 import { Switch } from "../../switch";
 import { CheckboxField } from "./checkbox-field";
-import styles from "./styles.module.scss";
+import styles from "@agentation/core/styles/page-toolbar-css/settings-panel/styles.module.scss";
 
 type ConnectionStatus = "disconnected" | "connecting" | "connected";
 

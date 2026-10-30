@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { COMPONENT_REGISTRY, DEFAULT_SIZES, type ComponentType } from "./types";
-import { originalRequestAnimationFrame, originalSetTimeout } from "../../utils/freeze-animations";
-import styles from "./styles.module.scss";
+import { COMPONENT_REGISTRY, DEFAULT_SIZES, type ComponentType } from "@agentation/core/design-mode/types";
+import { originalRequestAnimationFrame, originalSetTimeout } from "@agentation/core/utils/freeze-animations";
+import styles from "@agentation/core/styles/design-mode/styles.module.scss";
 import { usePanelPresence } from "../../hooks/use-panel-presence";
 
 function scrollFadeClass(el: HTMLDivElement | null) {

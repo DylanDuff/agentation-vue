@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, waitFor, within } from "@testing-library/react";
 import { PageFeedbackToolbarCSS, type AgentationProps } from "./index";
-import { getStorageKey, saveDesignPlacements, loadDesignPlacements } from "../../utils/storage";
-import type { Annotation } from "../../types";
+import { getStorageKey, saveDesignPlacements, loadDesignPlacements } from "@agentation/core/utils/storage";
+import type { Annotation } from "@agentation/core/types";
 
 const note: Annotation = {
   id: "product-test",

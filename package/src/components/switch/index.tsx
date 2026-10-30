@@ -1,4 +1,4 @@
-import styles from "./styles.module.scss";
+import styles from "@agentation/core/styles/switch/styles.module.scss";
 
 interface SwitchProps extends React.InputHTMLAttributes<HTMLInputElement> {}
 

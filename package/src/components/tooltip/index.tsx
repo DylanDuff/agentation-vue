@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { originalSetTimeout } from "../../utils/freeze-animations";
+import { originalSetTimeout } from "@agentation/core/utils/freeze-animations";
 
 export const Tooltip = ({
   content,

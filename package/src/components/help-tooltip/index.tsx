@@ -1,6 +1,6 @@
 import { Tooltip } from "../tooltip";
 import { IconHelp } from "../icons";
-import styles from "./styles.module.scss";
+import styles from "@agentation/core/styles/help-tooltip/styles.module.scss";
 
 interface HelpTooltipProps {
   content: string;

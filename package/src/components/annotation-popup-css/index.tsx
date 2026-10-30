@@ -2,10 +2,10 @@
 
 import { useState, useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from "react";
 import { useExitCompletion } from "../../hooks/use-exit-completion";
-import styles, { css as popupCss } from "./styles.module.scss";
+import styles, { css as popupCss } from "@agentation/core/styles/annotation-popup-css/styles.module.scss";
 import { ensureStyles } from "../../utils/ensure-styles";
 import { AnnotationEditor, type AnnotationEditorHandle } from "./annotation-editor";
-import { originalSetTimeout } from "../../utils/freeze-animations";
+import { originalSetTimeout } from "@agentation/core/utils/freeze-animations";
 
 // =============================================================================
 // Helpers

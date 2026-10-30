@@ -12,9 +12,8 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "types": ["vitest/globals"],
-    "paths": { "@core/*": ["../package/src/*"] }
+    "types": ["vitest/globals"]
   },
-  "include": ["src", "playground", "../package/src/globals.d.ts", "../package/src/scss.d.ts"],
+  "include": ["src", "playground", "src/globals.d.ts", "src/scss.d.ts"],
   "exclude": ["node_modules", "dist"]
 }

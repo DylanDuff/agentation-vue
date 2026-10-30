@@ -1,6 +1,6 @@
 "use client";
 
-import s, { css as iconCss } from "./icon-transitions.module.scss";
+import s, { css as iconCss } from "@agentation/core/styles/icon-transitions.module.scss";
 import { useEnsureStyles } from "../utils/ensure-styles";
 
 // =============================================================================

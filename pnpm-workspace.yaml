@@ -1,4 +1,5 @@
 packages:
+  - 'package-core'
   - 'package'
   - 'package/example'
   - 'mcp'

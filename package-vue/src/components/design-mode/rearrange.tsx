@@ -1,9 +1,9 @@
 import { defineComponent, onBeforeUnmount, onMounted, onUpdated, ref, watch, type CSSProperties, type PropType } from "vue";
-import { captureElement } from "@core/components/design-mode/section-detection";
+import { captureElement } from "@agentation/core/design-mode/section-detection";
 import { AnnotationPopupCSS } from "../annotation-popup-css";
-import type { DetectedSection, RearrangeState } from "@core/components/design-mode/types";
-import styles from "@core/components/design-mode/styles.module.scss";
-import { originalSetTimeout } from "@core/utils/freeze-animations";
+import type { DetectedSection, RearrangeState } from "@agentation/core/design-mode/types";
+import styles from "@agentation/core/styles/design-mode/styles.module.scss";
+import { originalSetTimeout } from "@agentation/core/utils/freeze-animations";
 import { rs } from "../../utils/react-style";
 
 // =============================================================================

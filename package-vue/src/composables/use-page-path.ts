@@ -1,6 +1,6 @@
 import { onScopeDispose, ref, toValue, watch, type MaybeRefOrGetter } from "vue";
 
-export { runPageTask, matchesPage } from "../utils/page-routing";
+export { runPageTask, matchesPage } from "@agentation/core/utils/page-routing";
 
 const LOCATION_CHANGE = "agentation:locationchange";
 let historyPatched = false;

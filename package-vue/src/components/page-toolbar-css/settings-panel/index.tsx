@@ -1,12 +1,12 @@
 import { defineComponent, ref, watch, type CSSProperties, type PropType } from "vue";
 import { usePanelPresence } from "../../../composables/use-panel-presence";
 import { COLOR_OPTIONS, type ToolbarSettings } from "../constants";
-import { OUTPUT_DETAIL_OPTIONS } from "../../../utils/generate-output";
+import { OUTPUT_DETAIL_OPTIONS } from "@agentation/core/output/generate-output";
 import { HelpTooltip } from "../../help-tooltip";
 import { IconChevronLeft, IconMoon, IconSun } from "../../icons";
 import { Switch } from "../../switch";
 import { CheckboxField } from "./checkbox-field";
-import styles from "@core/components/page-toolbar-css/settings-panel/styles.module.scss";
+import styles from "@agentation/core/styles/page-toolbar-css/settings-panel/styles.module.scss";
 
 type ConnectionStatus = "disconnected" | "connecting" | "connected";
 

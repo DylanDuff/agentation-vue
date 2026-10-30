@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, waitFor, within } from "../../../test-utils";
 import { PageFeedbackToolbarCSS } from "../index";
-import { loadAnnotations, saveAnnotations, saveDesignPlacements, saveSessionId, loadSessionId, getStorageKey } from "@core/utils/storage";
-import type { Annotation } from "@core/types";
+import { loadAnnotations, saveAnnotations, saveDesignPlacements, saveSessionId, loadSessionId, getStorageKey } from "@agentation/core/utils/storage";
+import type { Annotation } from "@agentation/core/types";
 
 const path = "/hash-review";
 const route = (name: string) => `${path}#/${name}`;

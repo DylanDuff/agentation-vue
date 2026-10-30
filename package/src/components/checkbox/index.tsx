@@ -1,4 +1,4 @@
-import styles from "./styles.module.scss";
+import styles from "@agentation/core/styles/checkbox/styles.module.scss";
 
 interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {}
 

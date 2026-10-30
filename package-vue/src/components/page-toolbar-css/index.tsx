@@ -19,9 +19,9 @@ import {
 import { useLatestAction } from "../../composables/use-latest-action";
 import { usePagePath, runPageTask, matchesPage } from "../../composables/use-page-path";
 import { useFeedbackPortal } from "../../composables/use-feedback-portal";
-import { mergeSessionFeedback } from "@core/utils/merge-session-feedback";
-import { createPageEvents, createFrameProjector, viewportRect, parentFrame, captureFrameContext } from "@core/utils/frame-dom";
-import { deepElementFromPoint, pierceElementFromPoint, annotationElementFromPoint } from "@core/utils/hit-testing";
+import { mergeSessionFeedback } from "@agentation/core/utils/merge-session-feedback";
+import { createPageEvents, createFrameProjector, viewportRect, parentFrame, captureFrameContext } from "@agentation/core/utils/frame-dom";
+import { deepElementFromPoint, pierceElementFromPoint, annotationElementFromPoint } from "@agentation/core/utils/hit-testing";
 import ShadowRoot from "../shadow-root/ShadowRoot.vue";
 
 import {
@@ -42,9 +42,9 @@ import { ToolbarToggleIcon } from "./toolbar-toggle-icon";
 import { DesignMode } from "../design-mode";
 import { DesignPalette } from "../design-mode/palette";
 import { RearrangeOverlay } from "../design-mode/rearrange";
-import { generateDesignOutput, generateRearrangeOutput } from "@core/components/design-mode/output";
-import { detectPageSections } from "@core/components/design-mode/section-detection";
-import { DEFAULT_SIZES, type DesignPlacement, type ComponentType as DesignComponentType, type RearrangeState, type CanvasPurpose } from "@core/components/design-mode/types";
+import { generateDesignOutput, generateRearrangeOutput } from "@agentation/core/design-mode/output";
+import { detectPageSections } from "@agentation/core/design-mode/section-detection";
+import { DEFAULT_SIZES, type DesignPlacement, type ComponentType as DesignComponentType, type RearrangeState, type CanvasPurpose } from "@agentation/core/design-mode/types";
 import {
   identifyElement,
   getNearbyText,
@@ -56,7 +56,7 @@ import {
   getAccessibilityInfo,
   getNearbyElements,
   closestCrossingShadow,
-} from "@core/utils/element-identification";
+} from "@agentation/core/utils/element-identification";
 import {
   loadAnnotations,
   loadAllAnnotations,
@@ -77,20 +77,16 @@ import {
   clearWireframeState,
   loadToolbarHidden,
   saveToolbarHidden,
-} from "@core/utils/storage";
+} from "@agentation/core/utils/storage";
 import {
   createSession,
   getSession,
   syncAnnotation,
   updateAnnotation as updateAnnotationOnServer,
   deleteAnnotation as deleteAnnotationFromServer,
-} from "@core/utils/sync";
-import {
-  getVueComponentName,
-  getSourceLocation,
-  findNearestComponentSource,
-  formatSourceLocation,
-} from "../../utils/vue-detection";
+} from "@agentation/core/utils/sync";
+import { vueDetector } from "@agentation/core/detectors/vue";
+import { detectComponentSourceFile, identifyElementWithComponents } from "@agentation/core/detection";
 import {
   installAnimationFreeze,
   freeze as freezeAll,
@@ -98,17 +94,17 @@ import {
   originalSetTimeout,
   originalSetInterval,
   originalRequestAnimationFrame,
-} from "@core/utils/freeze-animations";
+} from "@agentation/core/utils/freeze-animations";
 
-import type { Annotation } from "@core/types";
-import { generateOutput, generateOutputHeader } from "../../utils/generate-output";
-import { captureElementAttributes, DEFAULT_IDENTIFYING_ATTRIBUTES } from "@core/utils/element-attributes";
-import { formatCopyOutput, type CopyFormat } from "@core/utils/copy-format";
-import { copyTextToClipboard } from "@core/utils/clipboard";
-import { createShadowSync } from "@core/utils/shadow-sync";
-import { subscribeSessionResolutions } from "@core/utils/session-resolutions";
+import type { Annotation } from "@agentation/core/types";
+import { generateOutput, generateOutputHeader } from "@agentation/core/output/generate-output";
+import { captureElementAttributes, DEFAULT_IDENTIFYING_ATTRIBUTES } from "@agentation/core/utils/element-attributes";
+import { formatCopyOutput, type CopyFormat } from "@agentation/core/utils/copy-format";
+import { copyTextToClipboard } from "@agentation/core/utils/clipboard";
+import { createShadowSync } from "@agentation/core/utils/shadow-sync";
+import { subscribeSessionResolutions } from "@agentation/core/utils/session-resolutions";
 import { AnnotationCard } from "./annotation-card";
-import { css as annotationCardCss } from "@core/components/page-toolbar-css/annotation-card/styles.module.scss";
+import { css as annotationCardCss } from "@agentation/core/styles/page-toolbar-css/annotation-card/styles.module.scss";
 import { AnnotationMarker } from "./annotation-marker";
 import { SettingsPanel } from "./settings-panel";
 import { HoverTooltip } from "./hover-tooltip";
@@ -126,19 +122,19 @@ import {
 } from "./constants";
 import { rs } from "../../utils/react-style";
 
-import { css as resetCss } from "@core/components/reset.scss";
-import styles, { css as toolbarCss } from "@core/components/page-toolbar-css/styles.module.scss";
+import { css as resetCss } from "@agentation/core/styles/reset.scss";
+import styles, { css as toolbarCss } from "@agentation/core/styles/page-toolbar-css/styles.module.scss";
 import designStyles, {
   css as designModeCss,
-} from "@core/components/design-mode/styles.module.scss";
-import { css as popupCss } from "@core/components/annotation-popup-css/styles.module.scss";
-import { css as checkboxCss } from "@core/components/checkbox/styles.module.scss";
-import { css as helpTooltipCss } from "@core/components/help-tooltip/styles.module.scss";
-import { css as iconTransitionsCss } from "@core/components/icon-transitions.module.scss";
-import { css as annotationMarkerCss } from "@core/components/page-toolbar-css/annotation-marker/styles.module.scss";
-import { css as checkboxFieldCss } from "@core/components/page-toolbar-css/settings-panel/checkbox-field/styles.module.scss";
-import { css as settingsPanelCss } from "@core/components/page-toolbar-css/settings-panel/styles.module.scss";
-import { css as switchCss } from "@core/components/switch/styles.module.scss";
+} from "@agentation/core/styles/design-mode/styles.module.scss";
+import { css as popupCss } from "@agentation/core/styles/annotation-popup-css/styles.module.scss";
+import { css as checkboxCss } from "@agentation/core/styles/checkbox/styles.module.scss";
+import { css as helpTooltipCss } from "@agentation/core/styles/help-tooltip/styles.module.scss";
+import { css as iconTransitionsCss } from "@agentation/core/styles/icon-transitions.module.scss";
+import { css as annotationMarkerCss } from "@agentation/core/styles/page-toolbar-css/annotation-marker/styles.module.scss";
+import { css as checkboxFieldCss } from "@agentation/core/styles/page-toolbar-css/settings-panel/checkbox-field/styles.module.scss";
+import { css as settingsPanelCss } from "@agentation/core/styles/page-toolbar-css/settings-panel/styles.module.scss";
+import { css as switchCss } from "@agentation/core/styles/switch/styles.module.scss";
 
 export {
   COLOR_OPTIONS,
@@ -161,40 +157,13 @@ const shadowCss = [
   settingsPanelCss,
   switchCss,
 ].join("\n");
-/**
- * Composes element identification with Vue component detection.
- * This is the boundary where we combine framework-agnostic element ID
- * with Vue-specific component name detection.
- */
+/** Element identification plus the Vue component path (see ComponentDetector) */
 function identifyElementWithVue(
   element: HTMLElement,
   reactMode: ReactComponentMode = "filtered",
   attributeNames?: readonly string[],
-): {
-  /** Combined name for display (component path + element) */
-  name: string;
-  /** Raw element name without component path */
-  elementName: string;
-  /** DOM path */
-  path: string;
-  /** Vue component path (e.g., '<SideNav> <LinkComponent>') */
-  reactComponents: string | null;
-} {
-  const { name: elementName, path } = identifyElement(element, attributeNames);
-
-  // If component detection is off, just return element info
-  if (reactMode === "off") {
-    return { name: elementName, elementName, path, reactComponents: null };
-  }
-
-  const vueInfo = getVueComponentName(element, { mode: reactMode });
-
-  return {
-    name: vueInfo.path ? `${vueInfo.path} ${elementName}` : elementName,
-    elementName,
-    path,
-    reactComponents: vueInfo.path,
-  };
+) {
+  return identifyElementWithComponents(element, vueDetector, reactMode, attributeNames);
 }
 
 // Module-level flag to prevent re-animating on SPA page navigation
@@ -225,12 +194,7 @@ function isRenderableAnnotation(annotation: Annotation): boolean {
 }
 
 function detectSourceFile(element: Element): string | undefined {
-  const result = getSourceLocation(element as HTMLElement);
-  const loc = result.found ? result : findNearestComponentSource(element as HTMLElement);
-  if (loc.found && loc.source) {
-    return formatSourceLocation(loc.source, "path");
-  }
-  return undefined;
+  return detectComponentSourceFile(element, vueDetector);
 }
 
 // =============================================================================
@@ -2944,7 +2908,7 @@ const PageFeedbackToolbarForRoute = defineComponent({
         snapshot.annotations,
         displayUrl,
         settings.value.outputDetail,
-        { appName: props.appName },
+        { appName: props.appName, componentLabel: vueDetector.name },
       );
       if (!output && snapshot.drawStrokes.length === 0 && snapshot.designPlacements.length === 0 && !snapshot.rearrangeState) return;
       if (!output) output = generateOutputHeader(displayUrl, props.appName);
@@ -3134,7 +3098,7 @@ const PageFeedbackToolbarForRoute = defineComponent({
       snapshot.annotations,
       displayUrl,
       settings.value.outputDetail,
-      { appName: props.appName },
+      { appName: props.appName, componentLabel: vueDetector.name },
     );
     if (!output && snapshot.designPlacements.length === 0 && !snapshot.rearrangeState) return;
     if (!output) output = generateOutputHeader(displayUrl, props.appName);

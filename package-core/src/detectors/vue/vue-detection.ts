@@ -13,6 +13,18 @@
 //   DevTools) has stamped elements with `data-v-inspector="file:line:col"`.
 // =============================================================================
 
+import {
+  cleanSourcePath,
+  DEFAULT_USER_PATTERNS,
+  formatSourceLocation,
+  getAncestorClasses,
+  isMinifiedName,
+  shouldIncludeComponent,
+  type SourceLocation,
+} from "../shared";
+
+export { cleanSourcePath, formatSourceLocation, type SourceLocation };
+
 interface VueComponentType {
   name?: string;
   __name?: string;
@@ -81,13 +93,6 @@ export const DEFAULT_SKIP_PATTERNS: RegExp[] = [
   /^Root$/,
 ];
 
-/** Patterns that indicate likely user-defined components (smart mode fallback) */
-const DEFAULT_USER_PATTERNS: RegExp[] = [
-  /Page$/, /View$/, /Screen$/, /Section$/, /Card$/, /List$/, /Item$/, /Form$/,
-  /Modal$/, /Dialog$/, /Button$/, /Nav$/, /Header$/, /Footer$/, /Layout$/,
-  /Panel$/, /Tab$/, /Menu$/,
-];
-
 // =============================================================================
 // Configuration Types
 // =============================================================================
@@ -134,75 +139,6 @@ function resolveConfig(config?: VueDetectionConfig): ResolvedConfig {
     userPatterns: config?.userPatterns ?? DEFAULT_USER_PATTERNS,
     filter: config?.filter,
   };
-}
-
-// =============================================================================
-// Filter Logic (same heuristics as the React package)
-// =============================================================================
-
-/** SideNav -> side-nav */
-function normalizeComponentName(name: string): string {
-  return name
-    .replace(/([a-z])([A-Z])/g, "$1-$2")
-    .replace(/([A-Z])([A-Z][a-z])/g, "$1-$2")
-    .toLowerCase();
-}
-
-function getAncestorClasses(element: Element, maxDepth = 10): Set<string> {
-  const classes = new Set<string>();
-  let current: Element | null = element;
-  let depth = 0;
-  while (current && depth < maxDepth) {
-    const className = current.getAttribute("class");
-    if (className) {
-      className.split(/\s+/).forEach((cls) => {
-        if (cls.length > 1) {
-          const normalized = cls.replace(/[_][a-zA-Z0-9]{5,}.*$/, "").toLowerCase();
-          if (normalized.length > 1) classes.add(normalized);
-        }
-      });
-    }
-    current = current.parentElement;
-    depth++;
-  }
-  return classes;
-}
-
-function componentCorrelatesWithDOM(componentName: string, domClasses: Set<string>): boolean {
-  const normalized = normalizeComponentName(componentName);
-  for (const cls of domClasses) {
-    if (cls === normalized) return true;
-    const componentWords = normalized.split("-").filter((w) => w.length > 2);
-    const classWords = cls.split("-").filter((w) => w.length > 2);
-    for (const cWord of componentWords) {
-      for (const dWord of classWords) {
-        if (cWord === dWord || cWord.includes(dWord) || dWord.includes(cWord)) return true;
-      }
-    }
-  }
-  return false;
-}
-
-function shouldIncludeComponent(
-  name: string,
-  depth: number,
-  config: ResolvedConfig,
-  domClasses?: Set<string>,
-): boolean {
-  if (config.filter) return config.filter(name, depth);
-  if (config.mode === "all") return true;
-  if (config.skipExact.has(name)) return false;
-  if (config.skipPatterns.some((p) => p.test(name))) return false;
-  if (config.mode === "filtered") return true;
-  // smart
-  if (domClasses && componentCorrelatesWithDOM(name, domClasses)) return true;
-  return config.userPatterns.some((p) => p.test(name));
-}
-
-function isMinifiedName(name: string): boolean {
-  if (name.length <= 2) return true;
-  if (name.length <= 3 && name === name.toLowerCase()) return true;
-  return false;
 }
 
 // =============================================================================
@@ -314,16 +250,6 @@ export function getVueComponentName(element: HTMLElement, config?: VueDetectionC
 // Source Location Detection
 // =============================================================================
 
-export interface SourceLocation {
-  /** File path, relative to the project root when it can be determined */
-  fileName: string;
-  /** Line number (1-indexed), only known with vite-plugin-vue-inspector */
-  lineNumber?: number;
-  /** Column number, only known with vite-plugin-vue-inspector */
-  columnNumber?: number;
-  componentName?: string;
-}
-
 export type SourceLocationNotFoundReason =
   | "not-vue-app"
   | "no-instance"
@@ -335,18 +261,6 @@ export interface SourceLocationResult {
   source?: SourceLocation;
   reason?: SourceLocationNotFoundReason;
   isVueApp: boolean;
-}
-
-/** Strips absolute prefixes so paths read like `src/components/Button.vue` */
-export function cleanSourcePath(rawPath: string): string {
-  let path = rawPath.replace(/\\/g, "/").replace(/^file:\/\//, "").replace(/\?.*$/, "");
-  const markers = ["/src/", "/app/", "/components/", "/pages/", "/layouts/"];
-  for (const marker of markers) {
-    const index = path.indexOf(marker);
-    if (index !== -1) return path.slice(index + 1);
-  }
-  path = path.replace(/^\/+/, "");
-  return path;
 }
 
 function parseInspectorAttribute(element: Element): SourceLocation | null {
@@ -409,18 +323,4 @@ export function findNearestComponentSource(element: HTMLElement, maxAncestors = 
     depth++;
   }
   return getSourceLocation(element);
-}
-
-/** `src/components/Button.vue:42:8` (line and column when known) or a vscode:// URL */
-export function formatSourceLocation(source: SourceLocation, format: "path" | "vscode" = "path"): string {
-  const { fileName, lineNumber, columnNumber } = source;
-  let location = fileName;
-  if (lineNumber !== undefined) {
-    location += `:${lineNumber}`;
-    if (columnNumber !== undefined) location += `:${columnNumber}`;
-  }
-  if (format === "vscode") {
-    return `vscode://file${fileName.startsWith("/") ? "" : "/"}${location}`;
-  }
-  return location;
 }

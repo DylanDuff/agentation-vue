@@ -1,6 +1,6 @@
 "use client";
 
-import type { ComponentType } from "./types";
+import type { ComponentType } from "@agentation/core/design-mode/types";
 
 // =============================================================================
 // Wireframe Skeleton Renderers

@@ -1,7 +1,7 @@
 import { defineComponent } from "vue";
 import { Tooltip } from "../tooltip";
 import { IconHelp } from "../icons";
-import styles from "@core/components/help-tooltip/styles.module.scss";
+import styles from "@agentation/core/styles/help-tooltip/styles.module.scss";
 
 export const HelpTooltip = defineComponent(
   (props: { content: string }) => () => (

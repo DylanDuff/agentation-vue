@@ -1,6 +1,6 @@
 import { defineComponent, onBeforeUnmount, ref, watch, type CSSProperties, type PropType } from "vue";
-import { originalSetTimeout } from "@core/utils/freeze-animations";
-import styles from "@core/components/annotation-popup-css/styles.module.scss";
+import { originalSetTimeout } from "@agentation/core/utils/freeze-animations";
+import styles from "@agentation/core/styles/annotation-popup-css/styles.module.scss";
 
 /** Focus an element while temporarily blocking focus-trap libraries (e.g. Radix
  *  FocusScope) from reclaiming focus via focusin/focusout handlers. */

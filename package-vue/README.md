@@ -25,7 +25,7 @@ In development builds the toolbar names the Vue components around each element (
 
 ## How the port is organised
 
-- Framework-agnostic code (types, storage, sync, element identification, output formatting, frame and hit-testing helpers, SCSS) is imported from `../package/src` through the `@core` alias, so it is shared with the React package rather than copied.
+- Framework-agnostic code (types, storage, sync, element identification, output formatting, frame and hit-testing helpers, component detectors, SCSS) comes from `@agentation/core` (`package-core/`), the same core the React package bundles, rather than being copied.
 - Components are written as TSX with `setup()` render functions.
 - The 4,800-line toolbar component was converted with `scripts/port-toolbar.mjs`, which keeps upstream's structure. `src/composables/react-compat.ts` supplies `useState`, `useRef` and effect helpers with React's timing (run after render, re-run when dependencies change, clean up first), which keeps upstream changes easy to carry across.
 - The upstream toolbar tests run against this port (`src/components/page-toolbar-css/__tests__`), converted with `scripts/port-tests.py` and `scripts/asyncify.mjs`, using small helpers in `src/test-utils.tsx`.

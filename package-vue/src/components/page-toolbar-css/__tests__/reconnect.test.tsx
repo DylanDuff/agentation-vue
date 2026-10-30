@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, waitFor, within } from "../../../test-utils";
 import { PageFeedbackToolbarCSS } from "../index";
-import * as timing from "@core/utils/freeze-animations";
-import { saveAnnotations, loadAnnotations } from "@core/utils/storage";
-import type { Annotation } from "@core/types";
+import * as timing from "@agentation/core/utils/freeze-animations";
+import { saveAnnotations, loadAnnotations } from "@agentation/core/utils/storage";
+import type { Annotation } from "@agentation/core/types";
 
 const root = () => within(document.querySelector("agentation-toolbar")!.shadowRoot! as unknown as HTMLElement);
 const note = (id: string): Annotation => ({id,x:20,y:50,comment:`Keep ${id}`,element:"button",elementPath:"#target",timestamp:Date.now(),status:"pending"});

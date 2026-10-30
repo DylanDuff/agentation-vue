@@ -1,9 +1,9 @@
 "use client";
 
 import { useLatestAction } from "../../hooks/use-latest-action";
-import { mergeSessionFeedback } from "../../utils/merge-session-feedback";
-import { createPageEvents, createFrameProjector, viewportRect, parentFrame, captureFrameContext } from "../../utils/frame-dom";
-import { deepElementFromPoint, pierceElementFromPoint, annotationElementFromPoint } from "../../utils/hit-testing";
+import { mergeSessionFeedback } from "@agentation/core/utils/merge-session-feedback";
+import { createPageEvents, createFrameProjector, viewportRect, parentFrame, captureFrameContext } from "@agentation/core/utils/frame-dom";
+import { deepElementFromPoint, pierceElementFromPoint, annotationElementFromPoint } from "@agentation/core/utils/hit-testing";
 
 import { useState, useCallback, useEffect, useLayoutEffect, useRef, useMemo } from "react";
 import type { Dispatch, SetStateAction } from "react";
@@ -30,9 +30,9 @@ import { ToolbarToggleIcon } from "./toolbar-toggle-icon";
 import { DesignMode } from "../design-mode";
 import { DesignPalette } from "../design-mode/palette";
 import { RearrangeOverlay } from "../design-mode/rearrange";
-import { generateDesignOutput, generateRearrangeOutput } from "../design-mode/output";
-import { detectPageSections } from "../design-mode/section-detection";
-import { DEFAULT_SIZES, type DesignPlacement, type ComponentType as DesignComponentType, type RearrangeState } from "../design-mode/types";
+import { generateDesignOutput, generateRearrangeOutput } from "@agentation/core/design-mode/output";
+import { detectPageSections } from "@agentation/core/design-mode/section-detection";
+import { DEFAULT_SIZES, type DesignPlacement, type ComponentType as DesignComponentType, type RearrangeState } from "@agentation/core/design-mode/types";
 import {
   identifyElement,
   getNearbyText,
@@ -44,7 +44,7 @@ import {
   getAccessibilityInfo,
   getNearbyElements,
   closestCrossingShadow,
-} from "../../utils/element-identification";
+} from "@agentation/core/utils/element-identification";
 import {
   loadAnnotations,
   loadAllAnnotations,
@@ -65,20 +65,16 @@ import {
   clearWireframeState,
   loadToolbarHidden,
   saveToolbarHidden,
-} from "../../utils/storage";
+} from "@agentation/core/utils/storage";
 import {
   createSession,
   getSession,
   syncAnnotation,
   updateAnnotation as updateAnnotationOnServer,
   deleteAnnotation as deleteAnnotationFromServer,
-} from "../../utils/sync";
-import { getReactComponentName } from "../../utils/react-detection";
-import {
-  getSourceLocation,
-  findNearestComponentSource,
-  formatSourceLocation,
-} from "../../utils/source-location";
+} from "@agentation/core/utils/sync";
+import { reactDetector } from "../../detectors/react";
+import { detectComponentSourceFile, identifyElementWithComponents, type ComponentPathMode } from "@agentation/core/detection";
 import {
   installAnimationFreeze,
   freeze as freezeAll,
@@ -86,34 +82,34 @@ import {
   originalSetTimeout,
   originalSetInterval,
   originalRequestAnimationFrame,
-} from "../../utils/freeze-animations";
+} from "@agentation/core/utils/freeze-animations";
 
-import type { Annotation } from "../../types";
-import { generateOutput, generateOutputHeader } from "../../utils/generate-output";
-import { captureElementAttributes, DEFAULT_IDENTIFYING_ATTRIBUTES } from "../../utils/element-attributes";
-import { formatCopyOutput, type CopyFormat } from "../../utils/copy-format";
-import { copyTextToClipboard } from "../../utils/clipboard";
-import { createShadowSync } from "../../utils/shadow-sync";
-import { subscribeSessionResolutions } from "../../utils/session-resolutions";
+import type { Annotation } from "@agentation/core/types";
+import { generateOutput, generateOutputHeader, OUTPUT_TO_COMPONENT_MODE, type OutputDetailLevel } from "@agentation/core/output/generate-output";
+import { captureElementAttributes, DEFAULT_IDENTIFYING_ATTRIBUTES } from "@agentation/core/utils/element-attributes";
+import { formatCopyOutput, type CopyFormat } from "@agentation/core/utils/copy-format";
+import { copyTextToClipboard } from "@agentation/core/utils/clipboard";
+import { createShadowSync } from "@agentation/core/utils/shadow-sync";
+import { subscribeSessionResolutions } from "@agentation/core/utils/session-resolutions";
 import { AnnotationCard } from "./annotation-card";
-import { css as annotationCardCss } from "./annotation-card/styles.module.scss";
+import { css as annotationCardCss } from "@agentation/core/styles/page-toolbar-css/annotation-card/styles.module.scss";
 import { AnnotationMarker } from "./annotation-marker";
 import { SettingsPanel } from "./settings-panel";
 import { HoverTooltip } from "./hover-tooltip";
 
-import { css as resetCss } from "../reset.scss";
-import styles, { css as toolbarCss } from "./styles.module.scss";
+import { css as resetCss } from "@agentation/core/styles/reset.scss";
+import styles, { css as toolbarCss } from "@agentation/core/styles/page-toolbar-css/styles.module.scss";
 import designStyles, {
   css as designModeCss,
-} from "../design-mode/styles.module.scss";
-import { css as popupCss } from "../annotation-popup-css/styles.module.scss";
-import { css as checkboxCss } from "../checkbox/styles.module.scss";
-import { css as helpTooltipCss } from "../help-tooltip/styles.module.scss";
-import { css as iconTransitionsCss } from "../icon-transitions.module.scss";
-import { css as annotationMarkerCss } from "./annotation-marker/styles.module.scss";
-import { css as checkboxFieldCss } from "./settings-panel/checkbox-field/styles.module.scss";
-import { css as settingsPanelCss } from "./settings-panel/styles.module.scss";
-import { css as switchCss } from "../switch/styles.module.scss";
+} from "@agentation/core/styles/design-mode/styles.module.scss";
+import { css as popupCss } from "@agentation/core/styles/annotation-popup-css/styles.module.scss";
+import { css as checkboxCss } from "@agentation/core/styles/checkbox/styles.module.scss";
+import { css as helpTooltipCss } from "@agentation/core/styles/help-tooltip/styles.module.scss";
+import { css as iconTransitionsCss } from "@agentation/core/styles/icon-transitions.module.scss";
+import { css as annotationMarkerCss } from "@agentation/core/styles/page-toolbar-css/annotation-marker/styles.module.scss";
+import { css as checkboxFieldCss } from "@agentation/core/styles/page-toolbar-css/settings-panel/checkbox-field/styles.module.scss";
+import { css as settingsPanelCss } from "@agentation/core/styles/page-toolbar-css/settings-panel/styles.module.scss";
+import { css as switchCss } from "@agentation/core/styles/switch/styles.module.scss";
 
 const shadowCss = [
   resetCss,
@@ -129,40 +125,13 @@ const shadowCss = [
   settingsPanelCss,
   switchCss,
 ].join("\n");
-/**
- * Composes element identification with React component detection.
- * This is the boundary where we combine framework-agnostic element ID
- * with React-specific component name detection.
- */
+/** Element identification plus the React component path (see ComponentDetector) */
 function identifyElementWithReact(
   element: HTMLElement,
   reactMode: ReactComponentMode = "filtered",
   attributeNames?: readonly string[],
-): {
-  /** Combined name for display (React path + element) */
-  name: string;
-  /** Raw element name without React path */
-  elementName: string;
-  /** DOM path */
-  path: string;
-  /** React component path (e.g., '<SideNav> <LinkComponent>') */
-  reactComponents: string | null;
-} {
-  const { name: elementName, path } = identifyElement(element, attributeNames);
-
-  // If React detection is off, just return element info
-  if (reactMode === "off") {
-    return { name: elementName, elementName, path, reactComponents: null };
-  }
-
-  const reactInfo = getReactComponentName(element, { mode: reactMode });
-
-  return {
-    name: reactInfo.path ? `${reactInfo.path} ${elementName}` : elementName,
-    elementName,
-    path,
-    reactComponents: reactInfo.path,
-  };
+) {
+  return identifyElementWithComponents(element, reactDetector, reactMode, attributeNames);
 }
 
 // Module-level flag to prevent re-animating on SPA page navigation
@@ -189,13 +158,9 @@ type PendingMultiSelectElement = {
   reactComponents?: string;
 };
 
-export type OutputDetailLevel =
-  | "compact"
-  | "standard"
-  | "detailed"
-  | "forensic";
+export type { OutputDetailLevel };
 // ReactComponentMode is now derived from outputDetail when reactEnabled is true
-export type ReactComponentMode = "smart" | "filtered" | "all" | "off";
+export type ReactComponentMode = ComponentPathMode;
 type MarkerClickBehavior = "edit" | "delete";
 
 export type ToolbarSettings = {
@@ -232,12 +197,7 @@ const isValidUrl = (url: string): boolean => {
 };
 
 // Maps output detail level to React detection mode
-const OUTPUT_TO_REACT_MODE: Record<OutputDetailLevel, ReactComponentMode> = {
-  compact: "off",
-  standard: "filtered",
-  detailed: "smart",
-  forensic: "all",
-};
+const OUTPUT_TO_REACT_MODE = OUTPUT_TO_COMPONENT_MODE;
 
 const isPrimaryMultiSelectModifierActive = (event: {
   metaKey: boolean;
@@ -302,12 +262,7 @@ function isRenderableAnnotation(annotation: Annotation): boolean {
 }
 
 function detectSourceFile(element: Element): string | undefined {
-  const result = getSourceLocation(element as HTMLElement);
-  const loc = result.found ? result : findNearestComponentSource(element as HTMLElement);
-  if (loc.found && loc.source) {
-    return formatSourceLocation(loc.source, "path");
-  }
-  return undefined;
+  return detectComponentSourceFile(element, reactDetector);
 }
 
 // =============================================================================
@@ -626,7 +581,7 @@ function PageFeedbackToolbarForRoute({
   const [blankCanvas, setBlankCanvas] = useState(false);
   const [canvasReady, setCanvasReady] = useState(false); // delays .visible by one frame on mount
   const [canvasOpacity, setCanvasOpacity] = useState(1);
-  const [canvasPurpose, setCanvasPurpose] = useState<import("../design-mode/types").CanvasPurpose>("new-page");
+  const [canvasPurpose, setCanvasPurpose] = useState<import("@agentation/core/design-mode/types").CanvasPurpose>("new-page");
   const [wireframePurpose, setWireframePurpose] = useState("");
   const [designInteracting, setDesignInteracting] = useState(false);
   const [rearrangeState, setRearrangeState] = useState<RearrangeState | null>(null);
@@ -2999,7 +2954,7 @@ function PageFeedbackToolbarForRoute({
         annotations,
         displayUrl,
         settings.outputDetail,
-        { appName },
+        { appName, componentLabel: reactDetector.name },
       );
       if (!output && drawStrokes.length === 0 && designPlacements.length === 0 && !rearrangeState) return;
       if (!output) output = generateOutputHeader(displayUrl, appName);
@@ -3208,7 +3163,7 @@ function PageFeedbackToolbarForRoute({
       annotations,
       displayUrl,
       settings.outputDetail,
-      { appName },
+      { appName, componentLabel: reactDetector.name },
     );
     if (!output && designPlacements.length === 0 && !rearrangeState) return;
     if (!output) output = generateOutputHeader(displayUrl, appName);

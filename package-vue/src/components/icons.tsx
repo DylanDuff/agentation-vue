@@ -1,5 +1,5 @@
 import type { CSSProperties, SVGAttributes } from "vue";
-import s, { css as iconCss } from "@core/components/icon-transitions.module.scss";
+import s, { css as iconCss } from "@agentation/core/styles/icon-transitions.module.scss";
 import { useEnsureStyles } from "../composables/use-ensure-styles";
 
 // =============================================================================

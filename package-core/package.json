@@ -1,0 +1,23 @@
+{
+  "name": "@agentation/core",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Framework-agnostic core shared by the Agentation adapters (bundled into each adapter, not published)",
+  "license": "PolyForm-Shield-1.0.0",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./styles/*": "./src/styles/*",
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "jsdom": "^25.0.1",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.9"
+  }
+}

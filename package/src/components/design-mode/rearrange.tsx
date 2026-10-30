@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { captureElement } from "./section-detection";
+import { captureElement } from "@agentation/core/design-mode/section-detection";
 import { AnnotationPopupCSS } from "../annotation-popup-css";
-import type { DetectedSection, RearrangeState } from "./types";
-import styles from "./styles.module.scss";
-import { originalSetTimeout } from "../../utils/freeze-animations";
+import type { DetectedSection, RearrangeState } from "@agentation/core/design-mode/types";
+import styles from "@agentation/core/styles/design-mode/styles.module.scss";
+import { originalSetTimeout } from "@agentation/core/utils/freeze-animations";
 
 // =============================================================================
 // Rearrange Overlay — Click-to-capture, free drag, resize
