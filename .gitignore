@@ -9,3 +9,5 @@ mcp/.test-dist
 !.env.example
 .claude/settings.local.json
 package-vue/dist
+package-element/dist
+package-svelte/dist

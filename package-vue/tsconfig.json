@@ -12,8 +12,12 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals"],
+    "paths": {
+      "agentation-element/mount": ["../package-element/src/mount.ts"],
+      "@agentation/core/*": ["../package-core/src/*"]
+    }
   },
-  "include": ["src", "playground", "src/globals.d.ts", "src/scss.d.ts"],
+  "include": ["src", "test", "playground", "src/globals.d.ts", "src/scss.d.ts"],
   "exclude": ["node_modules", "dist"]
 }

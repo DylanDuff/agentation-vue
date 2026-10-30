@@ -1,0 +1,48 @@
+{
+  "name": "agentation-element",
+  "version": "0.0.1",
+  "description": "Visual feedback for AI coding agents, as a custom element for any framework or none",
+  "license": "PolyForm-Shield-1.0.0",
+  "type": "module",
+  "sideEffects": [
+    "./dist/agentation.iife.js"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "unpkg": "./dist/agentation.iife.js",
+  "jsdelivr": "./dist/agentation.iife.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./auto": "./dist/agentation.iife.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "vite build && vite build --config vite.iife.config.ts && tsup src/index.ts --dts-only --format esm --tsconfig tsconfig.json --out-dir dist",
+    "test": "vitest run && vitest run --config vitest.preact.config.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@agentation/core": "workspace:*",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/preact": "3.2.4",
+    "@types/node": "^20.19.43",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "jsdom": "^25.0.1",
+    "postcss": "^8.5.28",
+    "postcss-modules": "^6.0.1",
+    "preact": "10.29.8",
+    "sass": "^1.104.1",
+    "tsup": "8.5.1",
+    "typescript": "^5.9.3",
+    "vite": "^6.3.5",
+    "vitest": "^2.1.9"
+  }
+}

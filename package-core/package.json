@@ -2,7 +2,7 @@
   "name": "@agentation/core",
   "version": "0.0.1",
   "private": true,
-  "description": "Framework-agnostic core shared by the Agentation adapters (bundled into each adapter, not published)",
+  "description": "Framework-agnostic core shared by the Agentation adapters: utils, detectors, styles and the toolbar UI (bundled into each adapter, not published)",
   "license": "PolyForm-Shield-1.0.0",
   "type": "module",
   "sideEffects": false,
@@ -15,9 +15,20 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@testing-library/react": "^16.3.3",
     "@types/node": "^20.19.43",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.7.0",
     "jsdom": "^25.0.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sass": "^1.104.1",
     "typescript": "^5.9.3",
     "vitest": "^2.1.9"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   }
 }

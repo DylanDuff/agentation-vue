@@ -2,7 +2,7 @@
 // Agentation (Vue)
 // =============================================================================
 //
-// Vue 3 port of Agentation: a floating toolbar for annotating web pages and
+// Vue 3 adapter for Agentation: a floating toolbar for annotating web pages and
 // collecting structured feedback for AI coding agents.
 //
 // Usage:
@@ -11,23 +11,15 @@
 //
 // =============================================================================
 
-// Main components
-export { PageFeedbackToolbarCSS as Agentation } from "./components/page-toolbar-css";
-export { PageFeedbackToolbarCSS } from "./components/page-toolbar-css";
-export type { DemoAnnotation, AgentationProps } from "./components/page-toolbar-css";
+export { PageFeedbackToolbarCSS as Agentation, PageFeedbackToolbarCSS } from "./components/agentation";
+export type { AgentationProps } from "./components/agentation";
+export type { DemoAnnotation } from "@agentation/core/ui";
 
-// Shared components (for building custom UIs)
-export { AnnotationPopupCSS } from "./components/annotation-popup-css";
-export type {
-  AnnotationPopupCSSProps,
-  AnnotationPopupCSSHandle,
-} from "./components/annotation-popup-css";
-export { default as ShadowRoot } from "./components/shadow-root/ShadowRoot.vue";
+// Component detection
+export { vueDetector } from "@agentation/core/detectors/vue";
+export type { ComponentDetector } from "@agentation/core/detection";
 
-// Icons (pure SVG functional components)
-export * from "./components/icons";
-
-// Utilities (shared with the React package)
+// Utilities (shared with every adapter)
 export {
   identifyElement,
   identifyAnimationElement,
