@@ -1,0 +1,43 @@
+{
+  "name": "agentation-vue",
+  "version": "0.0.1",
+  "description": "Visual feedback for AI coding agents (Vue 3 port of Agentation)",
+  "license": "PolyForm-Shield-1.0.0",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite --config vite.playground.config.ts",
+    "test": "vitest run",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "peerDependencies": {
+    "vue": ">=3.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "@vitejs/plugin-vue": "^5.2.4",
+    "@vue/test-utils": "^2.4.6",
+    "jsdom": "^25.0.1",
+    "postcss": "^8.5.28",
+    "postcss-modules": "^6.0.1",
+    "sass": "^1.104.1",
+    "typescript": "^5.9.3",
+    "vite": "^6.3.5",
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^2.1.9",
+    "vue": "^3.5.22",
+    "vue-tsc": "^2.2.12"
+  }
+}
