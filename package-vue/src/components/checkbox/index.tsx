@@ -1,9 +1,9 @@
-import { defineComponent } from "vue";
+import { defineComponent, type InputHTMLAttributes } from "vue";
 import styles from "@core/components/checkbox/styles.module.scss";
 
 // Extra attributes and listeners (onChange, disabled, id) go to the <input>, like the React version.
 export const Checkbox = defineComponent(
-  (props: { class?: string; checked?: boolean }, { attrs }) => () => (
+  (props: { class?: string; checked?: boolean } & Omit<InputHTMLAttributes, "class" | "checked">, { attrs }) => () => (
     <div
       class={`${styles.checkboxContainer} ${props.class ?? ""}`}
       data-checked={props.checked ? "" : undefined}
