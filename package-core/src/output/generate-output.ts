@@ -1,12 +1,16 @@
-import {
-  OutputDetailLevel,
-  ReactComponentMode,
-} from "../components/page-toolbar-css";
-import { Annotation } from "../types";
+import type { Annotation } from "../types";
+import type { ComponentPathMode } from "../detection";
 
-export const OUTPUT_TO_REACT_MODE: Record<
+export type OutputDetailLevel =
+  | "compact"
+  | "standard"
+  | "detailed"
+  | "forensic";
+
+/** Maps output detail level to how much of the component path is collected */
+export const OUTPUT_TO_COMPONENT_MODE: Record<
   OutputDetailLevel,
-  ReactComponentMode
+  ComponentPathMode
 > = {
   compact: "off",
   standard: "filtered",
@@ -35,9 +39,14 @@ export function generateOutput(
   annotations: Annotation[],
   pathname: string,
   detailLevel: OutputDetailLevel = "standard",
-  options: { appName?: string } = {},
+  options: {
+    appName?: string;
+    /** Label for the component path line, from the active detector (e.g. "React", "Vue") */
+    componentLabel?: string;
+  } = {},
 ): string {
   if (annotations.length === 0) return "";
+  const componentLabel = options.componentLabel ?? "Components";
 
   const viewport =
     typeof window !== "undefined"
@@ -102,7 +111,7 @@ export function generateOutput(
         output += `**Source:** ${a.sourceFile}\n`;
       }
       if (a.reactComponents) {
-        output += `**React:** ${a.reactComponents}\n`;
+        output += `**${componentLabel}:** ${a.reactComponents}\n`;
       }
       output += `**Feedback:** ${a.comment}\n\n`;
     } else {
@@ -113,7 +122,7 @@ export function generateOutput(
         output += `**Source:** ${a.sourceFile}\n`;
       }
       if (a.reactComponents) {
-        output += `**React:** ${a.reactComponents}\n`;
+        output += `**${componentLabel}:** ${a.reactComponents}\n`;
       }
       if (detailLevel === "detailed") {
         if (a.cssClasses) {

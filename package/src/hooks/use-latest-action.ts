@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { originalSetTimeout } from "../utils/freeze-animations";
+import { originalSetTimeout } from "@agentation/core/utils/freeze-animations";
 
 /** A new action supersedes earlier results and their delayed feedback. */
 export function useLatestAction() {

@@ -3,8 +3,8 @@ import { act, fireEvent, render } from "../../../test-utils";
 import { PageFeedbackToolbarCSS } from "../index";
 import {
   loadDesignPlacements, loadRearrangeState, saveDesignPlacements, saveRearrangeState,
-} from "@core/utils/storage";
-import type { DesignPlacement, RearrangeState } from "@core/components/design-mode/types";
+} from "@agentation/core/utils/storage";
+import type { DesignPlacement, RearrangeState } from "@agentation/core/design-mode/types";
 
 beforeEach(async () => {
   localStorage.clear();

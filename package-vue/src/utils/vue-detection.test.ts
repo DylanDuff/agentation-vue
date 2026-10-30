@@ -5,7 +5,7 @@ import {
   getSourceLocation,
   formatSourceLocation,
   cleanSourcePath,
-} from "./vue-detection";
+} from "@agentation/core/detectors/vue/vue-detection";
 import ShadowRoot from "../components/shadow-root/ShadowRoot.vue";
 
 const SubmitButton = defineComponent({

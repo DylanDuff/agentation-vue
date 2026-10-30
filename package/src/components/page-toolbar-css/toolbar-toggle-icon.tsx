@@ -1,4 +1,4 @@
-import styles from "./styles.module.scss";
+import styles from "@agentation/core/styles/page-toolbar-css/styles.module.scss";
 
 // The same strokes form the launcher and close icon, so interrupted motion can
 // reverse from its current shape without swapping SVGs or fading the glyph out.

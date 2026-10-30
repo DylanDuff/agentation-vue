@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { COMPONENT_MAP, DEFAULT_SIZES, type ComponentType, type DesignPlacement } from "./types";
+import { COMPONENT_MAP, DEFAULT_SIZES, type ComponentType, type DesignPlacement } from "@agentation/core/design-mode/types";
 import { Skeleton } from "./skeletons";
 import { AnnotationPopupCSS } from "../annotation-popup-css";
-import styles from "./styles.module.scss";
-import { originalSetTimeout } from "../../utils/freeze-animations";
+import styles from "@agentation/core/styles/design-mode/styles.module.scss";
+import { originalSetTimeout } from "@agentation/core/utils/freeze-animations";
 
 // =============================================================================
 // Layout Mode Overlay

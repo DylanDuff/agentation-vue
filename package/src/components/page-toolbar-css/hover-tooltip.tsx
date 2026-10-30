@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef } from "react";
-import styles from "./styles.module.scss";
+import styles from "@agentation/core/styles/page-toolbar-css/styles.module.scss";
 
 type HoverTooltipProps = {
   x: number;

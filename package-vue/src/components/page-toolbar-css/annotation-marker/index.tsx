@@ -1,9 +1,9 @@
 import { defineComponent, ref, watch, type PropType } from "vue";
-import type { Annotation } from "@core/types";
+import type { Annotation } from "@agentation/core/types";
 import { IconEdit, IconPlus, IconXmark } from "../../icons";
 import { useExitCompletion } from "../../../composables/use-exit-completion";
 import { rs } from "../../../utils/react-style";
-import styles from "@core/components/page-toolbar-css/annotation-marker/styles.module.scss";
+import styles from "@agentation/core/styles/page-toolbar-css/annotation-marker/styles.module.scss";
 
 type MarkerClickBehavior = "edit" | "delete";
 

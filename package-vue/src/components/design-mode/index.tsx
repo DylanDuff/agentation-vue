@@ -1,10 +1,10 @@
 import { defineComponent, onBeforeUnmount, onMounted, ref, watch, type CSSProperties, type PropType } from "vue";
 import type { JSX } from "vue/jsx-runtime";
-import { COMPONENT_MAP, DEFAULT_SIZES, type ComponentType, type DesignPlacement } from "@core/components/design-mode/types";
+import { COMPONENT_MAP, DEFAULT_SIZES, type ComponentType, type DesignPlacement } from "@agentation/core/design-mode/types";
 import { Skeleton } from "./skeletons";
 import { AnnotationPopupCSS } from "../annotation-popup-css";
-import styles from "@core/components/design-mode/styles.module.scss";
-import { originalSetTimeout } from "@core/utils/freeze-animations";
+import styles from "@agentation/core/styles/design-mode/styles.module.scss";
+import { originalSetTimeout } from "@agentation/core/utils/freeze-animations";
 import { useWindowScroll } from "../../composables/use-window-scroll";
 import { rs } from "../../utils/react-style";
 

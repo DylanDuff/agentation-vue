@@ -1,5 +1,5 @@
 import { defineComponent, onBeforeUnmount, ref, Teleport } from "vue";
-import { originalSetTimeout } from "@core/utils/freeze-animations";
+import { originalSetTimeout } from "@agentation/core/utils/freeze-animations";
 
 export const Tooltip = defineComponent(
   (props: { content: string }, { slots, attrs }) => {

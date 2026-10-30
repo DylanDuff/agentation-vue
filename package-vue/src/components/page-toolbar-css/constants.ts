@@ -1,3 +1,6 @@
+import type { ComponentPathMode } from "@agentation/core/detection";
+import { OUTPUT_TO_COMPONENT_MODE, type OutputDetailLevel } from "@agentation/core/output/generate-output";
+
 // Toolbar types and constants, split out of the toolbar component so the
 // settings panel can import them without a circular import.
 
@@ -18,10 +21,10 @@ export type PendingMultiSelectElement = {
   reactComponents?: string;
 };
 
-export type OutputDetailLevel = "compact" | "standard" | "detailed" | "forensic";
+export type { OutputDetailLevel };
 // ReactComponentMode is derived from outputDetail when component detection is on.
 // The name is kept from the React package so stored settings stay compatible.
-export type ReactComponentMode = "smart" | "filtered" | "all" | "off";
+export type ReactComponentMode = ComponentPathMode;
 export type MarkerClickBehavior = "edit" | "delete";
 
 export type ToolbarSettings = {
@@ -59,12 +62,7 @@ export const isValidUrl = (url: string): boolean => {
 };
 
 // Maps output detail level to component detection mode
-export const OUTPUT_TO_REACT_MODE: Record<OutputDetailLevel, ReactComponentMode> = {
-  compact: "off",
-  standard: "filtered",
-  detailed: "smart",
-  forensic: "all",
-};
+export const OUTPUT_TO_REACT_MODE = OUTPUT_TO_COMPONENT_MODE;
 
 export const isPrimaryMultiSelectModifierActive = (event: { metaKey: boolean; ctrlKey: boolean }): boolean =>
   event.metaKey || event.ctrlKey;

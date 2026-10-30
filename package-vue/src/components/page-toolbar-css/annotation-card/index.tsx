@@ -1,5 +1,5 @@
 import { defineComponent, onBeforeUnmount, ref, watch, type PropType } from "vue";
-import type { Annotation } from "@core/types";
+import type { Annotation } from "@agentation/core/types";
 import { useExitCompletion } from "../../../composables/use-exit-completion";
 import type { AnnotationPopupCSSHandle } from "../../annotation-popup-css";
 import {
@@ -7,8 +7,8 @@ import {
   type AnnotationEditorHandle,
   type AnnotationEditorProps,
 } from "../../annotation-popup-css/annotation-editor";
-import popupStyles from "@core/components/annotation-popup-css/styles.module.scss";
-import styles from "@core/components/page-toolbar-css/annotation-card/styles.module.scss";
+import popupStyles from "@agentation/core/styles/annotation-popup-css/styles.module.scss";
+import styles from "@agentation/core/styles/page-toolbar-css/annotation-card/styles.module.scss";
 
 /** One heading and note field persist from read-only preview through editing. */
 export const AnnotationCard = defineComponent({

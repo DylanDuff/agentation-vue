@@ -1,8 +1,8 @@
 import { memo, useLayoutEffect, useRef, useState } from "react";
-import { Annotation } from "../../../types";
+import { Annotation } from "@agentation/core/types";
 import { IconEdit, IconPlus, IconXmark } from "../../icons";
 import { useExitCompletion } from "../../../hooks/use-exit-completion";
-import styles from "./styles.module.scss";
+import styles from "@agentation/core/styles/page-toolbar-css/annotation-marker/styles.module.scss";
 
 type MarkerClickBehavior = "edit" | "delete";
 

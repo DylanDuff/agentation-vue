@@ -1,7 +1,7 @@
 import { defineComponent, ref, watch, type PropType, type Ref } from "vue";
-import { COMPONENT_REGISTRY, type ComponentType } from "@core/components/design-mode/types";
-import { originalRequestAnimationFrame, originalSetTimeout } from "@core/utils/freeze-animations";
-import styles from "@core/components/design-mode/styles.module.scss";
+import { COMPONENT_REGISTRY, type ComponentType } from "@agentation/core/design-mode/types";
+import { originalRequestAnimationFrame, originalSetTimeout } from "@agentation/core/utils/freeze-animations";
+import styles from "@agentation/core/styles/design-mode/styles.module.scss";
 import { usePanelPresence } from "../../composables/use-panel-presence";
 import { rs } from "../../utils/react-style";
 

@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { act, render, screen, fireEvent, waitFor, within } from "../../../test-utils";
 import { PageFeedbackToolbarCSS } from "../index";
-import type { Annotation } from "@core/types";
+import type { Annotation } from "@agentation/core/types";
 import type { AgentationProps } from "../index";
-import { getStorageKey } from "@core/utils/storage";
+import { getStorageKey } from "@agentation/core/utils/storage";
 
 function toolbarRoot() {
   return document.querySelector("agentation-toolbar")!.shadowRoot! as unknown as HTMLElement;

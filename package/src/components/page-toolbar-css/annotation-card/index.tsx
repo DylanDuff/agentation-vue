@@ -4,7 +4,7 @@ import {
   useLayoutEffect,
   useRef,
 } from "react";
-import type { Annotation } from "../../../types";
+import type { Annotation } from "@agentation/core/types";
 import { useExitCompletion } from "../../../hooks/use-exit-completion";
 import type { AnnotationPopupCSSHandle } from "../../annotation-popup-css";
 import {
@@ -12,8 +12,8 @@ import {
   type AnnotationEditorHandle,
   type AnnotationEditorProps,
 } from "../../annotation-popup-css/annotation-editor";
-import popupStyles from "../../annotation-popup-css/styles.module.scss";
-import styles from "./styles.module.scss";
+import popupStyles from "@agentation/core/styles/annotation-popup-css/styles.module.scss";
+import styles from "@agentation/core/styles/page-toolbar-css/annotation-card/styles.module.scss";
 
 type AnnotationCardProps = {
   annotation: Annotation | null;

@@ -1,5 +1,5 @@
 import { defineComponent, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import styles from "@core/components/page-toolbar-css/styles.module.scss";
+import styles from "@agentation/core/styles/page-toolbar-css/styles.module.scss";
 
 type HoverTooltipProps = {
   x: number;

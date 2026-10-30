@@ -3,7 +3,7 @@
 // =============================================================================
 
 import type { DetectedSection } from "./types";
-import { identifyElement } from "../../utils/element-identification";
+import { identifyElement } from "../utils/element-identification";
 
 // Tags that represent meaningful page sections
 const SECTION_TAGS = new Set([

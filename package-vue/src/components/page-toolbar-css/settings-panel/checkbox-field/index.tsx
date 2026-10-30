@@ -1,7 +1,7 @@
 import { defineComponent, useId, type PropType } from "vue";
 import { Checkbox } from "../../../checkbox";
 import { HelpTooltip } from "../../../help-tooltip";
-import styles from "@core/components/page-toolbar-css/settings-panel/checkbox-field/styles.module.scss";
+import styles from "@agentation/core/styles/page-toolbar-css/settings-panel/checkbox-field/styles.module.scss";
 
 export const CheckboxField = defineComponent({
   name: "CheckboxField",

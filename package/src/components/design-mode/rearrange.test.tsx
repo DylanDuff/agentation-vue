@@ -3,7 +3,7 @@ import { render, fireEvent } from "@testing-library/react";
 import { useState } from "react";
 import { RearrangeOverlay } from "./rearrange";
 import { ShadowRoot } from "../shadow-root";
-import type { RearrangeState } from "./types";
+import type { RearrangeState } from "@agentation/core/design-mode/types";
 
 afterEach(() => vi.restoreAllMocks());
 

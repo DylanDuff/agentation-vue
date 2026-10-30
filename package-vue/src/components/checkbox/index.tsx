@@ -1,5 +1,5 @@
 import { defineComponent, type InputHTMLAttributes } from "vue";
-import styles from "@core/components/checkbox/styles.module.scss";
+import styles from "@agentation/core/styles/checkbox/styles.module.scss";
 
 // Extra attributes and listeners (onChange, disabled, id) go to the <input>, like the React version.
 export const Checkbox = defineComponent(

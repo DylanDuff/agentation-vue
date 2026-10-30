@@ -1,5 +1,5 @@
 import { onScopeDispose } from "vue";
-import { originalSetTimeout } from "@core/utils/freeze-animations";
+import { originalSetTimeout } from "@agentation/core/utils/freeze-animations";
 
 export type LatestAction = ReturnType<typeof createLatestAction>;
 
