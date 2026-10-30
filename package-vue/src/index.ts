@@ -11,7 +11,21 @@
 //
 // =============================================================================
 
+// Main components
+export { PageFeedbackToolbarCSS as Agentation } from "./components/page-toolbar-css";
+export { PageFeedbackToolbarCSS } from "./components/page-toolbar-css";
+export type { DemoAnnotation, AgentationProps } from "./components/page-toolbar-css";
+
+// Shared components (for building custom UIs)
+export { AnnotationPopupCSS } from "./components/annotation-popup-css";
+export type {
+  AnnotationPopupCSSProps,
+  AnnotationPopupCSSHandle,
+} from "./components/annotation-popup-css";
 export { default as ShadowRoot } from "./components/shadow-root/ShadowRoot.vue";
+
+// Icons (pure SVG functional components)
+export * from "./components/icons";
 
 // Utilities (shared with the React package)
 export {
@@ -20,6 +34,7 @@ export {
   getElementPath,
   getNearbyText,
   getElementClasses,
+  // Shadow DOM support
   isInShadowDOM,
   getShadowHost,
   closestCrossingShadow,
@@ -27,4 +42,5 @@ export {
 
 export { loadAnnotations, saveAnnotations, getStorageKey } from "@core/utils/storage";
 
+// Types
 export type { Annotation } from "@core/types";

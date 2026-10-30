@@ -38,13 +38,6 @@ export const AnnotationCard = defineComponent({
           ? "preview"
           : "hidden";
 
-    watch(
-      [() => props.annotation, () => props.editorProps],
-      ([annotation, editorProps]) => {
-        if (annotation) previous = { annotation, editorProps };
-      },
-      { flush: "sync" },
-    );
 
     let removeResize: (() => void) | undefined;
     watch(
@@ -137,6 +130,9 @@ export const AnnotationCard = defineComponent({
     return () => {
       const shown = displayed();
       const formProps = props.annotation ? props.editorProps : previous.editorProps;
+      // Remember what was shown so it can animate out once deselected. Props
+      // update one at a time, so a watcher could pair a new note with old fields.
+      if (props.annotation) previous = { annotation: props.annotation, editorProps: props.editorProps };
       if (!shown || !formProps) return null;
       const currentMode = mode();
       const preview = currentMode === "preview" || !props.editing;

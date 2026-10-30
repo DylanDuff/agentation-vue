@@ -89,6 +89,9 @@ importers:
 
   package-vue:
     devDependencies:
+      '@testing-library/dom':
+        specifier: ^10.4.1
+        version: 10.4.1
       '@types/node':
         specifier: ^20.19.43
         version: 20.19.43

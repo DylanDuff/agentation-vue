@@ -1,4 +1,3 @@
-"use client";
 
 import type { CSSProperties } from "vue";
 import type { JSX } from "vue/jsx-runtime";
