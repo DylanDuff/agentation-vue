@@ -15,7 +15,9 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "vite build",
     "dev": "vite --config vite.playground.config.ts",
@@ -28,6 +30,7 @@
   "devDependencies": {
     "@types/node": "^20.19.43",
     "@vitejs/plugin-vue": "^5.2.4",
+    "@vitejs/plugin-vue-jsx": "^4.2.0",
     "@vue/test-utils": "^2.4.6",
     "jsdom": "^25.0.1",
     "postcss": "^8.5.28",
