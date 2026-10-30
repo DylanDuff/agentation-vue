@@ -2,7 +2,7 @@
 // shadow DOM) mounted from a Vue component. Vue only passes props through:
 // all behaviour lives in @agentation/core, the same code the React package runs.
 import { defineComponent, h, normalizeClass, onBeforeUnmount, onMounted, shallowRef, watchEffect, type PropType } from "vue";
-import { createStableCallbacks, mountAgentation, type AgentationInstance, type AgentationOptions } from "agentation-element/mount";
+import { createStableCallbacks, mountToolbar, type AgentationInstance, type AgentationOptions } from "agentation-element/mount";
 import type { ComponentDetector } from "@agentation/core/detection";
 import { vueDetector } from "@agentation/core/detectors/vue";
 import type { Annotation } from "@agentation/core/types";
@@ -70,7 +70,7 @@ export const PageFeedbackToolbarCSS = defineComponent({
       const element = anchor.value!;
       // Vue links elements to their component only in development builds
       isDevMode = "__vueParentComponent" in element;
-      instance = mountAgentation(element, options());
+      instance = mountToolbar(element, options());
       watchEffect(() => instance?.update(options()), { flush: "post" });
     });
     onBeforeUnmount(() => {

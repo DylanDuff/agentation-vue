@@ -25,7 +25,7 @@ In development builds the toolbar names the Vue components around each element (
 
 ## How it is built
 
-The toolbar itself is the shared UI from `@agentation/core` (`package-core/src/ui`), the same component the React package renders. Here it is rendered with Preact (through `preact/compat`, about 7 KB gzipped) inside the toolbar's own shadow root, so Vue and Preact never share a tree. `<Agentation>` is a thin Vue component (`src/components/agentation.ts`) that mounts it through `mountAgentation` from `agentation-element` and passes prop changes along. A fix to the toolbar lands in React, Vue, Svelte and the custom element at once.
+The toolbar itself is the shared UI from `@agentation/core` (`package-core/src/ui`), the same component the React package renders. Here it is rendered with Preact (through `preact/compat`, about 7 KB gzipped) inside the toolbar's own shadow root, so Vue and Preact never share a tree. `<Agentation>` is a thin Vue component (`src/components/agentation.ts`) that mounts it through `mountToolbar` from `agentation-element` and passes prop changes along. A fix to the toolbar lands in React, Vue, Svelte and the custom element at once.
 
 The toolbar test suites live in `test/` and run against the shared UI through the Vue wrapper.
 

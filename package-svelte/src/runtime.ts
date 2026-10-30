@@ -1,7 +1,7 @@
 // Everything Agentation.svelte needs, bundled: the shared toolbar (rendered
 // with Preact inside the page's shadow DOM), the Svelte component detector
 // and the shared utilities. The component itself only passes props through.
-import { createStableCallbacks, mountAgentation, type AgentationOptions } from "agentation-element/mount";
+import { createStableCallbacks, mountToolbar, type AgentationOptions } from "agentation-element/mount";
 import type { ComponentDetector } from "@agentation/core/detection";
 import { svelteDetector } from "@agentation/core/detectors/svelte";
 
@@ -24,7 +24,7 @@ export function createAgentation(anchor: HTMLElement, props: AgentationProps) {
       detectors: options.detectors ?? SVELTE_DETECTORS,
       isDevMode: options.isDevMode ?? isDevMode,
     });
-  const instance = mountAgentation(anchor, resolve(props));
+  const instance = mountToolbar(anchor, resolve(props));
   return {
     update: (next: AgentationProps) => instance.update(resolve(next)),
     destroy: () => instance.destroy(),

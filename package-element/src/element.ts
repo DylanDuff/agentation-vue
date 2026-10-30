@@ -1,5 +1,6 @@
 import type { Annotation } from "@agentation/core/types";
-import { createStableCallbacks, mountAgentation, type AgentationInstance, type AgentationOptions } from "./mount";
+import { mountAgentation } from "./auto-detect";
+import { createStableCallbacks, type AgentationInstance, type AgentationOptions } from "./mount";
 
 export const AGENTATION_ELEMENT_TAG = "agentation-feedback";
 

@@ -97,4 +97,23 @@ describe("mountAgentation", () => {
     instance.destroy();
     delete (window as unknown as { __svelte?: unknown }).__svelte;
   });
+
+  it("notices a development build that starts after the toolbar", async () => {
+    const container = document.body.appendChild(document.createElement("div"));
+    const instance = mountAgentation(container);
+    await settle();
+    // The app boots later and records Svelte's dev metadata
+    (window as unknown as { __svelte: { v: Set<string> } }).__svelte = { v: new Set(["5"]) };
+    const app = document.body.appendChild(document.createElement("main"));
+    Object.assign(app, { __svelte_meta: { loc: { file: "/app/src/App.svelte", line: 1, column: 0 } } });
+    fireEvent.click(toolbar().getByRole("button", { name: "Start feedback mode" }));
+    await settle();
+    fireEvent.click(toolbar().getByRole("button", { name: "Settings" }));
+    await settle();
+    const shadow = document.querySelector("agentation-toolbar")!.shadowRoot!;
+    const toggle = shadow.querySelector('input[aria-label="Svelte Components"]') as HTMLInputElement;
+    expect(toggle.disabled).toBe(false);
+    instance.destroy();
+    delete (window as unknown as { __svelte?: unknown }).__svelte;
+  });
 });
