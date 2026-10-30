@@ -13,19 +13,19 @@
 
 // Main components
 // CSS-only version (default - zero runtime deps)
-export { PageFeedbackToolbarCSS as Agentation } from "./components/page-toolbar-css";
-export { PageFeedbackToolbarCSS } from "./components/page-toolbar-css";
-export type { DemoAnnotation, AgentationProps } from "./components/page-toolbar-css";
+export { PageFeedbackToolbarCSS as Agentation } from "./components";
+export { PageFeedbackToolbarCSS } from "./components";
+export type { DemoAnnotation, AgentationProps } from "@agentation/core/ui";
 
 // Shared components (for building custom UIs)
-export { AnnotationPopupCSS } from "./components/annotation-popup-css";
+export { AnnotationPopupCSS } from "@agentation/core/ui";
 export type {
   AnnotationPopupCSSProps,
   AnnotationPopupCSSHandle,
-} from "./components/annotation-popup-css";
+} from "@agentation/core/ui";
 
 // Icons (same for both versions - they're pure SVG)
-export * from "./components/icons";
+export * from "@agentation/core/ui";
 
 // Utilities (for building custom UIs)
 export {

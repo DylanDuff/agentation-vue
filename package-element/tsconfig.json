@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["DOM", "DOM.Iterable", "ES2020"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "jsx": "react-jsx",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "types": ["vitest/globals", "node"],
+    "paths": { "@agentation/core/*": ["../package-core/src/*"] }
+  },
+  "include": ["src", "../package-core/src/globals.d.ts", "../package-core/src/scss.d.ts", "../package-core/src/modern-screenshot.d.ts"],
+  "exclude": ["node_modules", "dist", "src/**/*.test.ts"]
+}

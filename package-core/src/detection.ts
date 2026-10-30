@@ -26,6 +26,17 @@ export interface ComponentDetector {
   getComponentPath(element: HTMLElement, mode: Exclude<ComponentPathMode, "off">): string | null;
   /** Source file of the component that rendered the element, e.g. "src/Button.vue:12:4" */
   getSourceFile?(element: HTMLElement): string | undefined;
+  /**
+   * Whether the page runs a development build, where component names and
+   * sources are available. Used when the adapter cannot tell on its own.
+   */
+  isDevBuild?(): boolean;
+}
+
+/** Elements to sample when looking for a framework's dev-mode metadata */
+export function sampleElements(limit = 200): Element[] {
+  if (typeof document === "undefined" || !document.body) return [];
+  return Array.from(document.body.querySelectorAll("*")).slice(0, limit);
 }
 
 export type ComponentIdentification = {
@@ -84,4 +95,10 @@ export function detectComponentSourceFile(
 
 function toList(detectors: ComponentDetector | readonly ComponentDetector[]): readonly ComponentDetector[] {
   return Array.isArray(detectors) ? detectors : [detectors as ComponentDetector];
+}
+
+/** Label for component paths in output and settings: the active framework, else the first adapter's */
+export function componentLabel(detectors: readonly ComponentDetector[]): string {
+  const active = detectors.find((detector) => detector.isActive());
+  return (active ?? detectors[0])?.name ?? "Framework";
 }
