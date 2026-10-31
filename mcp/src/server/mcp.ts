@@ -119,16 +119,35 @@ const GetSessionSchema = z.object({
 });
 
 const WatchAnnotationsSchema = z.object({
-  sessionId: z.string().optional().describe("Optional session ID to filter. If not provided, watches ALL sessions."),
-  batchWindowSeconds: z.number().optional().default(10).describe("Seconds to wait after first annotation before returning batch (default: 10, max: 60)"),
-  timeoutSeconds: z.number().optional().default(120).describe("Max seconds to wait for first annotation (default: 120, max: 300)"),
+  sessionId: z.string().optional(),
+  batchWindowSeconds: z.number().optional(),
+  timeoutSeconds: z.number().optional(),
 });
+
+/**
+ * How long agentation_watch_annotations may wait for its first annotation.
+ * A blocking call holds the agent's turn, so it stays short. A task-backed
+ * call runs in the background, so it can wait much longer.
+ */
+export type WatchLimits = {
+  defaultTimeoutSeconds: number;
+  maxTimeoutSeconds: number;
+};
+
+export const BLOCKING_WATCH_LIMITS: WatchLimits = {
+  defaultTimeoutSeconds: 120,
+  maxTimeoutSeconds: 300,
+};
 
 // -----------------------------------------------------------------------------
 // Tool Definitions
 // -----------------------------------------------------------------------------
 
-export const TOOLS = [
+/**
+ * Tool definitions, with the watch timeout described for the given limits.
+ */
+export function buildTools(watchLimits: WatchLimits = BLOCKING_WATCH_LIMITS) {
+  return [
   {
     name: "agentation_list_sessions",
     description: "List all annotation sessions",
@@ -273,13 +292,18 @@ export const TOOLS = [
         },
         timeoutSeconds: {
           type: "number",
-          description: "Max seconds to wait for first annotation (default: 120, max: 300)",
+          description:
+            `Max seconds to wait for first annotation ` +
+            `(default: ${watchLimits.defaultTimeoutSeconds}, max: ${watchLimits.maxTimeoutSeconds})`,
         },
       },
       required: [],
     },
   },
-];
+  ];
+}
+
+export const TOOLS = buildTools();
 
 // -----------------------------------------------------------------------------
 // Types
@@ -360,7 +384,7 @@ function mapAnnotationForMcp(a: Annotation) {
 // Tool Handlers
 // -----------------------------------------------------------------------------
 
-type ToolResult = {
+export type ToolResult = {
   content: Array<{ type: "text"; text: string }>;
   isError?: boolean;
 };
@@ -559,7 +583,12 @@ function watchForAnnotations(
   });
 }
 
-export async function handleTool(name: string, args: unknown, signal?: AbortSignal): Promise<ToolResult> {
+export async function handleTool(
+  name: string,
+  args: unknown,
+  signal?: AbortSignal,
+  watchLimits: WatchLimits = BLOCKING_WATCH_LIMITS
+): Promise<ToolResult> {
   switch (name) {
     case "agentation_list_sessions": {
       const sessions = await httpGet<Session[]>("/sessions");
@@ -679,7 +708,10 @@ export async function handleTool(name: string, args: unknown, signal?: AbortSign
       if (signal?.aborted) return error("Watch cancelled");
       const sessionId = parsed.sessionId;
       const batchWindowSeconds = Math.min(60, Math.max(1, parsed.batchWindowSeconds ?? 10));
-      const timeoutSeconds = Math.min(300, Math.max(1, parsed.timeoutSeconds ?? 120));
+      const timeoutSeconds = Math.min(
+        watchLimits.maxTimeoutSeconds,
+        Math.max(1, parsed.timeoutSeconds ?? watchLimits.defaultTimeoutSeconds)
+      );
 
       // Drain: return any pending annotations immediately before blocking on SSE.
       // This catches annotations that arrived while the caller was busy processing
@@ -736,13 +768,30 @@ export async function handleTool(name: string, args: unknown, signal?: AbortSign
 // Server
 // -----------------------------------------------------------------------------
 
+export type McpServerOptions = {
+  /**
+   * Opt in to MCP Tasks (protocol revision 2026-07-28) for
+   * agentation_watch_annotations. Clients without Tasks support are served
+   * exactly as before. See docs/mcp-tasks.md.
+   */
+  tasks?: boolean;
+};
+
 /**
  * Create and start the MCP server on stdio.
  * @param baseUrl - Optional HTTP server URL to fetch from (default: http://localhost:4747)
+ * @param options - Optional features, such as opting in to MCP Tasks
  */
-export async function startMcpServer(baseUrl?: string): Promise<void> {
+export async function startMcpServer(baseUrl?: string, options: McpServerOptions = {}): Promise<void> {
   if (baseUrl) {
     setHttpBaseUrl(baseUrl);
+  }
+
+  if (options.tasks) {
+    const { startTaskMcpServer } = await import("./mcp-tasks.js");
+    startTaskMcpServer();
+    logStartup("tasks enabled");
+    return;
   }
 
   const server = new Server(
@@ -777,13 +826,19 @@ export async function startMcpServer(baseUrl?: string): Promise<void> {
   const transport = new StdioServerTransport();
   await server.connect(transport);
 
-  // Log startup message with connection details
+  logStartup();
+}
+
+/**
+ * Log the startup message with connection details.
+ * @param note - Optional extra detail, such as an enabled feature
+ */
+function logStartup(note?: string): void {
   const isRemote = httpBaseUrl.startsWith("https://") || (!httpBaseUrl.includes("localhost") && !httpBaseUrl.includes("127.0.0.1"));
-  if (isRemote && apiKey) {
-    console.error(`[MCP] Agentation MCP server started on stdio (Remote: ${httpBaseUrl}, API key: configured)`);
-  } else if (isRemote) {
-    console.error(`[MCP] Agentation MCP server started on stdio (Remote: ${httpBaseUrl}, API key: not configured)`);
-  } else {
-    console.error(`[MCP] Agentation MCP server started on stdio (HTTP: ${httpBaseUrl})`);
-  }
+  const details = [
+    isRemote ? `Remote: ${httpBaseUrl}` : `HTTP: ${httpBaseUrl}`,
+    ...(isRemote ? [`API key: ${apiKey ? "configured" : "not configured"}`] : []),
+    ...(note ? [note] : []),
+  ];
+  console.error(`[MCP] Agentation MCP server started on stdio (${details.join(", ")})`);
 }
