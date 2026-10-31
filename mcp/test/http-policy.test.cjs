@@ -189,3 +189,22 @@ test('deleting an MCP session aborts its in-flight tool call', { timeout: 8000 }
   const stale = await request(base, '/mcp', { method:'DELETE', headers:{'Mcp-Session-Id':sessionId} });
   assert.equal(stale.status, 404, 'deleted session was reinserted by its in-flight request'); await stale.text();
 });
+test('re-posting an already synced annotation returns the existing one instead of a duplicate', async t => {
+  const base = await server(t);
+  const post = body => ({ method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const first = await (await request(base, '/sessions', post({url:'http://resync.localhost'}))).json();
+  const payload = {x:1,y:2,comment:'Less space under the title',element:'h1',elementPath:'h1',timestamp:1793445309418};
+  const created = await (await request(base, `/sessions/${first.id}/annotations`, post(payload))).json();
+  await (await request(base, `/annotations/${created.id}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status:'resolved'}) })).text();
+  const second = await (await request(base, '/sessions', post({url:'http://resync.localhost'}))).json();
+  const again = await request(base, `/sessions/${second.id}/annotations`, post({...payload,id:created.id}));
+  assert.equal(again.status,200);
+  const returned = await again.json();
+  assert.equal(returned.id,created.id);
+  assert.equal(returned.sessionId,first.id);
+  assert.equal(returned.status,'resolved');
+  assert.deepEqual((await (await request(base, `/sessions/${second.id}`)).json()).annotations,[]);
+  const fresh = await request(base, `/sessions/${second.id}/annotations`, post({...payload,id:'never-synced-local-id'}));
+  assert.equal(fresh.status,201);
+  assert.notEqual((await fresh.json()).id,'never-synced-local-id');
+});

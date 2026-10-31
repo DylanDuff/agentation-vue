@@ -346,13 +346,22 @@ const getSessionHandler: RouteHandler = async (_req, res, params) => {
 
 /**
  * POST /sessions/:id/annotations - Add annotation to session.
+ *
+ * Idempotent by ID: a toolbar re-sending a note it already synced (its stored
+ * copy carries the server ID) gets the existing annotation back with 200,
+ * whatever session it lives in, instead of a duplicate under a new ID.
  */
 const addAnnotationHandler: RouteHandler = async (req, res, params) => {
   try {
-    const body = await parseBody<Omit<Annotation, "id" | "sessionId" | "status" | "createdAt">>(req);
+    const body = await parseBody<Omit<Annotation, "sessionId" | "status" | "createdAt">>(req);
 
     if (typeof body.comment !== "string" || !body.element || !body.elementPath) {
       return sendError(res, 400, "comment, element, and elementPath are required");
+    }
+
+    const existing = typeof body.id === "string" ? getAnnotation(body.id) : undefined;
+    if (existing) {
+      return sendJson(res, 200, existing);
     }
 
     const annotation = addAnnotation(params.id, body);
