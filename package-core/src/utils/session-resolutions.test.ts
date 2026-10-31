@@ -132,3 +132,20 @@ it("keeps local feedback through HTTP failures and malformed events, then recove
   await vi.advanceTimersByTimeAsync(10000);
   expect(resolved).toHaveBeenCalledOnce();
 });
+
+it("looks up page notes that live in another session and applies their resolutions", async () => {
+  fetcher.mockImplementation(async (url: string) => {
+    if (url.endsWith("/sessions/one")) return snapshot([{ id: "here", status: "pending" }]);
+    if (url.endsWith("/annotations/earlier")) return { ok: true, json: async () => ({ id: "earlier", status: "resolved" }) };
+    return { ok: false, status: 404, json: async () => ({}) };
+  });
+  stop = subscribeSessionResolutions("http://local.test", "one", () => pending, resolved,
+    () => ["here", "earlier", "gone"]);
+  await vi.advanceTimersByTimeAsync(10000);
+  expect(fetcher.mock.calls.map(([url]) => url)).toEqual([
+    "http://local.test/sessions/one",
+    "http://local.test/annotations/earlier",
+    "http://local.test/annotations/gone",
+  ]);
+  expect(resolved.mock.calls.map(([note]) => note.id)).toEqual(["earlier"]);
+});

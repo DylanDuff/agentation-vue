@@ -75,6 +75,10 @@ Agentation captures class names, selectors, and element positions so AI agents c
 
 Full documentation at [agentation.com](https://agentation.com)
 
+Developer reference:
+
+- [Toolbar to server sync](docs/server-sync.md): how stored annotations map to server IDs, what gets uploaded, and how agent resolutions reach the page
+
 ## License
 
 © 2026 Benji Taylor

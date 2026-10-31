@@ -1,12 +1,20 @@
 import type { Annotation } from "../types";
 import { originalSetInterval, originalSetTimeout } from "./freeze-animations";
+import { getAnnotation } from "./sync";
 
-/** Keep terminal annotation statuses current even if a proxy silently loses SSE. */
+/**
+ * Keep terminal annotation statuses current even if a proxy silently loses SSE.
+ *
+ * `localIds` lists the feedback shown on the page. Any of them that live in a
+ * different session (synced before the page joined this one) get no events
+ * here, so each periodic check also looks those up by ID.
+ */
 export function subscribeSessionResolutions(
   endpoint: string,
   sessionId: string,
   hasPending: () => boolean,
   onResolved: (annotation: Annotation) => void,
+  localIds: () => readonly string[] = () => [],
 ) {
   let disposed = false;
   let disconnect: (() => void) | undefined;
@@ -27,9 +35,14 @@ export function subscribeSessionResolutions(
       const response = await fetch(`${endpoint}/sessions/${sessionId}`, { signal: current.signal });
       if (!response.ok) return;
       const session = await response.json();
-      if (!disposed && !current.signal.aborted && Array.isArray(session.annotations)) {
-        session.annotations.forEach(apply);
-      }
+      if (disposed || current.signal.aborted || !Array.isArray(session.annotations)) return;
+      const annotations: Annotation[] = session.annotations;
+      annotations.forEach(apply);
+      const inSession = new Set(annotations.map(annotation => annotation.id));
+      const elsewhere = localIds().filter(id => !inSession.has(id));
+      const remote = await Promise.all(elsewhere.map(id =>
+        getAnnotation(endpoint, id, current.signal).catch(() => null)));
+      if (!current.signal.aborted) remote.forEach(annotation => annotation && apply(annotation));
     } catch {
       // Keep local work intact and retry at the next check.
     } finally {

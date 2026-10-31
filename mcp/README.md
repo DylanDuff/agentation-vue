@@ -119,7 +119,7 @@ The HTTP server provides a REST API for the browser toolbar:
 - `GET /sessions/:id` - Get session with annotations
 
 ### Annotations
-- `POST /sessions/:id/annotations` - Add annotation
+- `POST /sessions/:id/annotations` - Add annotation. Idempotent by `id`: posting an annotation that already exists returns it with `200` instead of creating a duplicate
 - `GET /annotations/:id` - Get annotation
 - `PATCH /annotations/:id` - Update annotation
 - `DELETE /annotations/:id` - Delete annotation

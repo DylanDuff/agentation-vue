@@ -8,6 +8,7 @@ import type { Annotation } from "../../../types";
 const root = () => within(document.querySelector("agentation-toolbar")!.shadowRoot! as unknown as HTMLElement);
 const note = (id: string): Annotation => ({id,x:20,y:50,comment:`Keep ${id}`,element:"button",elementPath:"#target",timestamp:Date.now(),status:"pending"});
 const response = (data: unknown) => Promise.resolve({ok:true,json:async()=>data});
+const notFound = () => Promise.resolve({ok:false,status:404,json:async()=>({error:"Annotation not found"})});
 const intervals: Array<() => unknown> = [];
 class Source extends EventTarget {
   static instances: Source[] = [];
@@ -86,6 +87,8 @@ it.each([
   const uploading = new Promise(resolve => { finishUpload = resolve; });
   const fetchMock = vi.fn((url: string, options?: RequestInit) => {
     if (url.endsWith("/sessions/session/annotations") && options?.method === "POST") return uploading;
+    // The server has never seen this stored note, so the toolbar uploads it.
+    if (url.endsWith("/annotations/uploading-note") && !options?.method) return notFound();
     return response(url.endsWith("/health") ? {} : { id: "session", annotations: [] });
   });
   vi.stubGlobal("fetch", fetchMock);
@@ -107,4 +110,38 @@ it.each([
   await waitFor(() => expect(fetchMock).toHaveBeenCalledWith("http://reconnect.test/annotations/server-note", expect.objectContaining(change === "edit" ? {
     method: "PATCH", body: JSON.stringify({ comment: "Keep edit during upload" }),
   } : { method: "DELETE" })));
+});
+
+it.each([
+  ["pending", ["synced-earlier"]],
+  ["resolved", []],
+])("never re-uploads a note already on the server in another session (%s)", async (status, expected) => {
+  // Synced under an earlier session, so the stored copy already has its server ID.
+  saveAnnotations("/reconnect-test", [{ ...note("synced-earlier"), sessionId: "earlier" }]);
+  const fetchMock = vi.fn((url: string, options?: RequestInit) => {
+    if (url.endsWith("/annotations/synced-earlier") && !options?.method) {
+      return response({ ...note("synced-earlier"), sessionId: "earlier", status });
+    }
+    return response(url.endsWith("/health") ? {} : { id: "session", annotations: [] });
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  render(<PageFeedbackToolbarCSS endpoint="http://reconnect.test" sessionId="session" />);
+  await waitFor(() => expect(Source.instances.length).toBe(1));
+  await waitFor(() => expect(loadAnnotations<Annotation>("/reconnect-test").map(a => a.id)).toEqual(expected));
+  expect(fetchMock).not.toHaveBeenCalledWith(expect.stringMatching(/\/annotations$/), expect.objectContaining({ method: "POST" }));
+});
+
+it("uploads only notes the server has never seen when a new session starts", async () => {
+  saveAnnotations("/reconnect-test", [note("on-server"), note("local-only")]);
+  const fetchMock = vi.fn((url: string, options?: RequestInit) => {
+    if (url.endsWith("/annotations/on-server") && !options?.method) return response({ ...note("on-server"), sessionId: "earlier" });
+    if (url.endsWith("/annotations/local-only") && !options?.method) return notFound();
+    if (url.endsWith("/sessions/fresh/annotations")) return response({ ...note("local-only"), id: "fresh-id", sessionId: "fresh" });
+    return response(url.endsWith("/health") ? {} : { id: "fresh", url: "http://localhost/reconnect-test", annotations: [] });
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  render(<PageFeedbackToolbarCSS endpoint="http://reconnect.test" />);
+  await waitFor(() => expect(loadAnnotations<Annotation>("/reconnect-test").map(a => a.id).sort()).toEqual(["fresh-id", "on-server"]));
+  const posts = fetchMock.mock.calls.filter(([url, options]) => url.endsWith("/annotations") && options?.method === "POST");
+  expect(posts.map(([, options]) => JSON.parse(options!.body as string).id)).toEqual(["local-only"]);
 });

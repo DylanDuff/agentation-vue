@@ -71,6 +71,7 @@ import {
   createSession,
   getSession,
   syncAnnotation,
+  partitionLocalAnnotations,
   updateAnnotation as updateAnnotationOnServer,
   deleteAnnotation as deleteAnnotationFromServer,
 } from "../../../utils/sync";
@@ -438,13 +439,50 @@ function PageFeedbackToolbarForRoute({
       !deletedIds.current.has(a.id) && matchesPage(a.url || session.url, pathname, window.location.origin)) } : session;
   const latestPathname = useRef(pathname);
   latestPathname.current = pathname;
-  const applySessionFeedback = (before: Annotation[], incoming: Annotation[], sessionId: string, pagePath = pathname) => {
+  const applySessionFeedback = (before: Annotation[], incoming: Annotation[], sessionId?: string, pagePath = pathname) => {
     const merged = mergeSessionFeedback(before, loadAnnotations<Annotation>(pagePath), incoming, serverIds.current)
       .filter(keepFeedback);
     // A response for a page the host has since navigated away from must not
     // become the new page's notes.
     if (pagePath === latestPathname.current && routeAlive.current) setAnnotations(merged);
-    saveAnnotationsWithSyncMarker(pagePath, merged, sessionId);
+    if (sessionId) saveAnnotationsWithSyncMarker(pagePath, merged, sessionId);
+    else saveAnnotations(pagePath, merged);
+  };
+  // Merge a page's stored feedback into a session. Notes the server already
+  // holds, in this session or an earlier one, are never posted again (that
+  // would mint a duplicate under a new ID), and the server's status wins so
+  // notes the agent resolved elsewhere leave this page too. `session` may be a
+  // factory so a session is only created when something needs uploading.
+  const syncLocalFeedback = async (
+    endpoint: string,
+    session: string | (() => Promise<string>),
+    sessionAnnotations: Annotation[],
+    before: Annotation[],
+    pagePath = pathname,
+  ) => {
+    // Read storage again: an upload queued before this may have swapped in a server ID.
+    const local = loadAnnotations<Annotation>(pagePath).filter(isRenderableAnnotation);
+    const inSession = new Set(sessionAnnotations.map(annotation => annotation.id));
+    // Merge in the same task when nothing needs a lookup, so a remounting
+    // route cannot save stale state between the snapshot and the merge.
+    const { upload, known } = local.some(annotation => !inSession.has(annotation.id))
+      ? await partitionLocalAnnotations(endpoint, local, sessionAnnotations)
+      : { upload: [], known: [] };
+    let sessionId = typeof session === "string" ? session : undefined;
+    let uploaded: Annotation[] = [];
+    if (upload.length) {
+      const targetId = typeof session === "string" ? session : await session();
+      sessionId = targetId;
+      const pageUrl = `${window.location.origin}${pagePath}`;
+      const results = await Promise.allSettled(upload.map((annotation) =>
+        syncPageAnnotation(endpoint, targetId, { ...annotation, sessionId: targetId, url: pageUrl })));
+      uploaded = results.map((result, i) => {
+        if (result.status === "fulfilled") return result.value;
+        console.warn("[Agentation] Failed to sync annotation:", result.reason);
+        return upload[i];
+      });
+    }
+    applySessionFeedback(before, [...sessionAnnotations, ...known, ...uploaded], sessionId, pagePath);
   };
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
   const [showMarkers, setShowMarkers] = useState(true);
@@ -919,7 +957,7 @@ function PageFeedbackToolbarForRoute({
         // Check for stored session ID to rejoin on refresh
         const storedSessionId = loadSessionId(pathname);
         const sessionIdToJoin = initialSessionId || storedSessionId;
-        let sessionEstablished = false;
+        let joined: { session: Awaited<ReturnType<typeof getSession>>; beforeJoin: Annotation[] } | undefined;
 
         if (sessionIdToJoin) {
           // Join existing session - server annotations are authoritative
@@ -932,58 +970,7 @@ function PageFeedbackToolbarForRoute({
               setConnectionStatus("connected");
             }
             saveSessionId(pathname, session.id);
-            sessionEstablished = true;
-
-            // Find local annotations that need to be synced:
-            // 1. Annotations never synced to any session
-            // 2. Annotations synced to a different session
-            // 3. Annotations marked as synced to THIS session but missing from server
-            //    (handles server-side deletion)
-            const allLocalAnnotations = loadAnnotations<Annotation>(pathname).filter(isRenderableAnnotation);
-            const serverIds = new Set(session.annotations.map((a) => a.id));
-            const localToMerge = allLocalAnnotations.filter((a) => {
-              // If it exists on server, don't re-upload
-              if (serverIds.has(a.id)) return false;
-              // Otherwise, needs to be synced (whether never synced, synced elsewhere, or missing from server)
-              return true;
-            });
-
-            // Sync unsynced local annotations to this session
-            if (localToMerge.length > 0) {
-              const baseUrl =
-                typeof window !== "undefined" ? window.location.origin : "";
-              const pageUrl = `${baseUrl}${pathname}`;
-
-              const results = await Promise.allSettled(
-                localToMerge.map((annotation) =>
-                  syncPageAnnotation(endpoint, session.id, {
-                    ...annotation,
-                    sessionId: session.id,
-                    url: pageUrl,
-                  }),
-                ),
-              );
-
-              const syncedAnnotations = results.map((result, i) => {
-                if (result.status === "fulfilled") {
-                  return result.value;
-                }
-                console.warn(
-                  "[Agentation] Failed to sync annotation:",
-                  result.reason,
-                );
-                return localToMerge[i];
-              });
-
-              // Mark merged annotations as synced
-              const allAnnotations = [
-                ...session.annotations,
-                ...syncedAnnotations,
-              ];
-              applySessionFeedback(beforeJoin, allAnnotations, session.id);
-            } else {
-              applySessionFeedback(beforeJoin, session.annotations, session.id);
-            }
+            joined = { session, beforeJoin };
           } catch (joinError) {
             // Session doesn't exist or expired - will create new below
             console.warn(
@@ -992,12 +979,14 @@ function PageFeedbackToolbarForRoute({
             );
             // Clear the stored session ID since it's invalid
             clearSessionId(pathname);
-            // sessionEstablished remains false, will create new session
+            // Falls through to creating a new session
           }
         }
 
-        // Create new session if we don't have one yet (either no stored ID, or rejoin failed)
-        if (!sessionEstablished) {
+        if (joined) {
+          await syncLocalFeedback(endpoint, joined.session.id, joined.session.annotations, joined.beforeJoin);
+        } else {
+          // No stored ID, or rejoin failed: create a new session
           // Create new session for current page
           const session = await createSession(endpoint, currentUrl);
           saveSessionId(pathname, session.id);
@@ -1007,63 +996,24 @@ function PageFeedbackToolbarForRoute({
             onSessionCreated?.(session.id);
           }
 
-          // Only sync annotations that have never been synced (no _syncedTo marker)
+          // Stored notes from every page are checked against the server, so
+          // only ones it has never seen are uploaded. Other pages get their
+          // own session, created (and remembered) only when they need one.
           const allAnnotations = useHashLocation
             ? new Map([[pathname, loadAnnotations<Annotation>(pathname)]])
             : loadAllAnnotations<Annotation>();
-          const baseUrl =
-            typeof window !== "undefined" ? window.location.origin : "";
-
-          // Sync annotations from all pages in parallel
           const syncPromises: Promise<void>[] = [];
           for (const [pagePath, annotations] of allAnnotations) {
-            // Filter to only unsynced annotations
-            const unsyncedAnnotations = annotations.filter(
-              (a) => isRenderableAnnotation(a) && !(a as Annotation & { _syncedTo?: string })._syncedTo,
-            );
-            if (unsyncedAnnotations.length === 0) continue;
-
-            const pageUrl = `${baseUrl}${pagePath}`;
-            const isCurrentPage = pagePath === pathname;
-
+            if (!annotations.some(isRenderableAnnotation)) continue;
+            const pageSession = pagePath === pathname ? session.id : async () => {
+              const created = await createSession(endpoint, `${window.location.origin}${pagePath}`);
+              saveSessionId(pagePath, created.id);
+              return created.id;
+            };
             syncPromises.push(
-              (async () => {
-                try {
-                  // Use current session for current page, create new sessions for other pages
-                  const targetSession = isCurrentPage
-                    ? session
-                    : await createSession(endpoint, pageUrl);
-
-                  const results = await Promise.allSettled(
-                    unsyncedAnnotations.map((annotation) =>
-                      syncPageAnnotation(endpoint, targetSession.id, {
-                        ...annotation,
-                        sessionId: targetSession.id,
-                        url: pageUrl,
-                      }),
-                    ),
-                  );
-
-                  // Mark synced annotations and update local state for current page
-                  const syncedAnnotations = results.map((result, i) => {
-                    if (result.status === "fulfilled") {
-                      return result.value;
-                    }
-                    console.warn(
-                      "[Agentation] Failed to sync annotation:",
-                      result.reason,
-                    );
-                    return unsyncedAnnotations[i];
-                  });
-
-                  applySessionFeedback(unsyncedAnnotations, syncedAnnotations, targetSession.id, pagePath);
-                } catch (err) {
-                  console.warn(
-                    `[Agentation] Failed to sync annotations for ${pagePath}:`,
-                    err,
-                  );
-                }
-              })(),
+              syncLocalFeedback(endpoint, pageSession, [], annotations, pagePath).catch((err) => {
+                console.warn(`[Agentation] Failed to sync annotations for ${pagePath}:`, err);
+              }),
             );
           }
 
@@ -1178,7 +1128,8 @@ function PageFeedbackToolbarForRoute({
       }
     };
     const stop = subscribeSessionResolutions(endpoint, currentSessionId,
-      () => hasPendingFeedbackRef.current, remove);
+      () => hasPendingFeedbackRef.current, remove,
+      () => currentAnnotationsRef.current.map(annotation => annotation.id));
     return stop;
   }, [endpoint, mounted, currentSessionId]);
 
@@ -1196,21 +1147,16 @@ function PageFeedbackToolbarForRoute({
       // Sync any local annotations that aren't on the server
       const syncLocalAnnotations = async () => {
         try {
-          const localAnnotations = loadAnnotations<Annotation>(pathname).filter(isRenderableAnnotation);
-          if (localAnnotations.length === 0) return;
-
-          const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-          const pageUrl = `${baseUrl}${pathname}`;
+          const before = loadAnnotations<Annotation>(pathname);
+          if (!before.some(isRenderableAnnotation)) return;
 
           // Get or create session
           let sessionId = currentSessionId;
           let serverAnnotations: Annotation[] = [];
 
           if (sessionId) {
-            // Try to get existing session
             try {
-              const session = scopeSession(await getSession(endpoint, sessionId));
-              serverAnnotations = session.annotations;
+              serverAnnotations = scopeSession(await getSession(endpoint, sessionId)).annotations;
             } catch {
               // Session doesn't exist anymore, create new one
               sessionId = null;
@@ -1218,40 +1164,13 @@ function PageFeedbackToolbarForRoute({
           }
 
           if (!sessionId) {
-            // Create new session
-            const newSession = await createSession(endpoint, pageUrl);
+            const newSession = await createSession(endpoint, `${window.location.origin}${pathname}`);
             sessionId = newSession.id;
             if (routeAlive.current) setCurrentSessionId(sessionId);
             saveSessionId(pathname, sessionId);
           }
 
-          // Find annotations that need syncing
-          const serverIds = new Set(serverAnnotations.map((a) => a.id));
-          const unsyncedLocal = localAnnotations.filter((a) => !serverIds.has(a.id));
-
-          if (unsyncedLocal.length > 0) {
-            const results = await Promise.allSettled(
-              unsyncedLocal.map((annotation) =>
-                syncPageAnnotation(endpoint, sessionId!, {
-                  ...annotation,
-                  sessionId: sessionId!,
-                  url: pageUrl,
-                })
-              )
-            );
-
-            const syncedAnnotations = results.map((result, i) => {
-              if (result.status === "fulfilled") {
-                return result.value;
-              }
-              console.warn("[Agentation] Failed to sync annotation on reconnect:", result.reason);
-              return unsyncedLocal[i];
-            });
-
-            // Update local state with server + synced annotations
-            const allAnnotations = [...serverAnnotations, ...syncedAnnotations];
-            applySessionFeedback(localAnnotations, allAnnotations, sessionId!);
-          }
+          await syncLocalFeedback(endpoint, sessionId, serverAnnotations, before);
         } catch (err) {
           console.warn("[Agentation] Failed to sync on reconnect:", err);
         }
