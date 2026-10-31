@@ -119,6 +119,7 @@ describe("clear batches", () => {
     const uploading = new Promise(resolve => { finishUpload = resolve; });
     const fetchMock = vi.fn((url: string, options?: RequestInit) => {
       if (url.endsWith("/sessions/session/annotations") && options?.method === "POST") return uploading;
+      if (url.endsWith(`/annotations/${note.id}`) && !options?.method) return Promise.resolve({ ok: false, status: 404, json: async () => ({}) });
       return Promise.resolve({ ok: true, json: async () => (url.endsWith("/health") ? {} : { id: "session", annotations: [] }) });
     });
     vi.stubGlobal("fetch", fetchMock);

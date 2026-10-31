@@ -57,6 +57,62 @@ export async function getSession(
 }
 
 /**
+ * Fetch one annotation by ID, from whichever session holds it. Resolves to
+ * null on 404 so callers can tell "the server never saw it" apart from a
+ * failed request.
+ */
+export async function getAnnotation(
+  endpoint: string,
+  annotationId: string,
+  signal?: AbortSignal
+): Promise<Annotation | null> {
+  const response = await fetch(`${endpoint}/annotations/${annotationId}`, signal ? { signal } : undefined);
+
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    throw new Error(`Failed to get annotation: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Split stored annotations into those that still need posting to a session
+ * and those the server already holds.
+ *
+ * Once synced, a stored annotation carries its server ID. Missing from the
+ * session being joined does not mean missing from the server: it may live in
+ * an earlier session for the same page. Each such note is looked up by ID and
+ * only a 404 marks it for upload. `known` holds the server's copy (so its
+ * status, e.g. resolved by the agent, wins) or, when the lookup failed, the
+ * local copy untouched until the next attempt.
+ */
+export async function partitionLocalAnnotations(
+  endpoint: string,
+  local: readonly Annotation[],
+  sessionAnnotations: readonly Annotation[]
+): Promise<{ upload: Annotation[]; known: Annotation[] }> {
+  const inSession = new Set(sessionAnnotations.map((annotation) => annotation.id));
+  const lookups = await Promise.all(
+    local
+      .filter((annotation) => !inSession.has(annotation.id))
+      .map(async (annotation) => {
+        try {
+          const remote = await getAnnotation(endpoint, annotation.id);
+          if (!remote) return { annotation, upload: true };
+          return { annotation: remote.id === annotation.id ? remote : annotation, upload: false };
+        } catch {
+          return { annotation, upload: false };
+        }
+      })
+  );
+  return {
+    upload: lookups.filter((lookup) => lookup.upload).map((lookup) => lookup.annotation),
+    known: lookups.filter((lookup) => !lookup.upload).map((lookup) => lookup.annotation),
+  };
+}
+
+/**
  * Sync a new annotation to the server.
  * Returns the annotation with any server-assigned fields.
  */
