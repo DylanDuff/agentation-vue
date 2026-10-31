@@ -91,6 +91,7 @@ agentation-mcp help                    # Show help
 --mcp-only         # Skip HTTP server, only run MCP on stdio
 --http-url <url>   # HTTP server URL for MCP to fetch from
 --host <address>   # Interface to bind (default: loopback only)
+--tasks            # Experimental: run watch_annotations as an MCP Task (see below)
 ```
 
 ## MCP Tools
@@ -154,6 +155,10 @@ For each annotation: acknowledge it, make the fix, then resolve it with a summar
 Continue watching until I say stop or timeout is reached.
 ```
 
+### MCP Tasks (experimental)
+
+Start the server with `--tasks` (or `AGENTATION_MCP_TASKS=1`) to let clients that support the MCP Tasks extension run `agentation_watch_annotations` in the background. The call returns at once, the agent keeps working, and the batch arrives when the client polls the task. Clients without Tasks support keep the blocking watch. See [docs/mcp-tasks.md](./docs/mcp-tasks.md).
+
 ## Webhooks
 
 Configure webhooks to receive notifications when users request agent action:
@@ -176,6 +181,7 @@ export AGENTATION_WEBHOOKS=https://server1.com/hook,https://server2.com/hook
 | `AGENTATION_EVENT_RETENTION_DAYS` | Days to keep SQLite events | `7` |
 | `AGENTATION_CORS_ORIGINS` | Allowed browser origins; see below | dev-server origins |
 | `AGENTATION_HOST` | Interface to bind; a non-loopback address enables remote clients | loopback only |
+| `AGENTATION_MCP_TASKS` | Set to `1` to enable MCP Tasks for `agentation_watch_annotations` ([docs](./docs/mcp-tasks.md)) | off |
 
 ## Programmatic Usage
 
