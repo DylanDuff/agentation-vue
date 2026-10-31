@@ -1128,7 +1128,8 @@ function PageFeedbackToolbarForRoute({
       }
     };
     const stop = subscribeSessionResolutions(endpoint, currentSessionId,
-      () => hasPendingFeedbackRef.current, remove);
+      () => hasPendingFeedbackRef.current, remove,
+      () => currentAnnotationsRef.current.map(annotation => annotation.id));
     return stop;
   }, [endpoint, mounted, currentSessionId]);
 
