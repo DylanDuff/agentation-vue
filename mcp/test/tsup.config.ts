@@ -9,6 +9,6 @@ export default defineConfig({
     build.onResolve({ filter: /^\.\/store\.js$/ }, args =>
       args.importer.endsWith("/server/http.ts") ? { path: resolve("test/store-adapter.ts") } : undefined);
   } }],
-  external: ["better-sqlite3", "@modelcontextprotocol/sdk", "zod"],
+  external: ["better-sqlite3", "@modelcontextprotocol/sdk", "@modelcontextprotocol/server", "zod"],
   define: { __VERSION__: JSON.stringify("test") },
 });

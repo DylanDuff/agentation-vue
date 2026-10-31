@@ -278,6 +278,7 @@ if (command === "init") {
     let httpUrl = "http://localhost:4747";
     let apiKeyArg: string | undefined;
     let host: string | undefined = process.env.AGENTATION_HOST?.trim() || undefined;
+    let tasks = process.env.AGENTATION_MCP_TASKS === "1";
 
     for (let i = 0; i < args.length; i++) {
       if (args[i] === "--port" && args[i + 1]) {
@@ -296,6 +297,9 @@ if (command === "init") {
       }
       if (args[i] === "--mcp-only") {
         mcpOnly = true;
+      }
+      if (args[i] === "--tasks") {
+        tasks = true;
       }
       if (args[i] === "--http-url" && args[i + 1]) {
         httpUrl = args[i + 1];
@@ -324,7 +328,7 @@ if (command === "init") {
     if (!mcpOnly) {
       startHttpServer(port, apiKey, { host });
     }
-    startMcpServer(httpUrl).catch((err) => {
+    startMcpServer(httpUrl, { tasks }).catch((err) => {
       console.error("MCP server error:", err);
       process.exit(1);
     });
@@ -345,6 +349,8 @@ Server Options:
   --http-url <url>   HTTP server URL for MCP to fetch from
   --api-key <key>    API key for cloud storage (or set AGENTATION_API_KEY env var)
   --host <address>   Interface to bind (default: loopback only; or set AGENTATION_HOST)
+  --tasks            Experimental: run watch_annotations as an MCP Task for clients
+                     that support it (or set AGENTATION_MCP_TASKS=1)
 
 Commands:
   init      Guided setup that configures Claude Code to use the MCP server.
